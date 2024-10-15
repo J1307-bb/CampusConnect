@@ -1,11 +1,11 @@
 import Screen from "@/components/Screen";
-import { Text, View } from "react-native";
+import { Text } from "react-native";
 
-export default function InicioTab() {
+export default function HorarioTab() {
     return ( 
         <Screen>
             <Text className="text-white text-2xl">
-                Inicio
+                Horario
             </Text>
         </Screen>
      );

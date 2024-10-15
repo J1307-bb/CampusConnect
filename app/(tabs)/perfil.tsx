@@ -1,11 +1,12 @@
 import Screen from "@/components/Screen";
-import { Text, View } from "react-native";
+import { Text } from "react-native";
 
-export default function InicioTab() {
+
+export default function PerfilTab() {
     return ( 
         <Screen>
             <Text className="text-white text-2xl">
-                Inicio
+                Perfil
             </Text>
         </Screen>
      );
