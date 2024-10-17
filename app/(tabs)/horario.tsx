@@ -4,7 +4,7 @@ import { Text } from "react-native";
 export default function HorarioTab() {
     return ( 
         <Screen>
-            <Text className="text-white text-2xl">
+            <Text className="text-black text-2xl">
                 Horario
             </Text>
         </Screen>
