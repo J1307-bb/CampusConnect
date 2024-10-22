@@ -38,7 +38,7 @@ export default function ClasesTab() {
   );
 
     return ( 
-        <Screen>
+        <Screen title={"Clases"} >
       {/* Barra de búsqueda */}
       <View className="flex-row items-center bg-white mx-4 mt-4 p-3 rounded-lg">
         <TabBarIcon name="search" size={24} color="gray" />
@@ -48,7 +48,6 @@ export default function ClasesTab() {
           value={searchText}
           onChangeText={setSearchText}
         />
-        <TabBarIcon name="close" size={24} color="gray" onPress={() => setSearchText('')} />
       </View>
 
       {/* Lista de clases */}

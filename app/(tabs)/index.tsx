@@ -42,9 +42,9 @@ export default function InicioTab() {
           {/* Clases de hoy */}
           <View className="px-4 py-4">
             <View className="flex-row justify-between items-center">
-              <Text className="text-lg font-bold">Today's Classes</Text>
-              <TouchableOpacity>
-                <Text className="text-purple-600">Open schedule</Text>
+              <Text className="text-lg font-bold">Clases de Hoy:</Text>
+              <TouchableOpacity className="flex-row items-center">
+                <Text className="text-purple-600">Ver Horario</Text>
                 <TabBarIcon name="chevron-forward" size={20} color="purple" />
               </TouchableOpacity>
             </View>
@@ -61,8 +61,8 @@ export default function InicioTab() {
           {/* Noticias y Eventos */}
           <View className="px-4">
             <View className="flex-row mb-2">
-              <Text className="text-lg font-bold">News</Text>
-              <Text className="ml-4">Events</Text>
+              <Text className="text-lg font-bold underline">Avisos</Text>
+              <Text className=" text-lg font-light ml-4">Eventos</Text>
             </View>
             <View className="bg-purple-100 p-4 mb-4 rounded-lg">
               <Text className="text-md font-semibold">FBISE</Text>
