@@ -1,5 +1,5 @@
 import CustomButton from "@/components/CustomButton";
-import Login from "@/components/Login";
+import Registro from "@/app/Registro"
 import Screen from "@/components/Screen";
 import { Link, router } from "expo-router";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
