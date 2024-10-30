@@ -81,7 +81,7 @@ const FileUploader = () => {
         iconColor = '#FBBC05';
         break;
       case 'PDF':
-        iconName = 'file-pdf';
+        iconName = 'file-pdf-box';
         iconColor = '#EA4335';
         break;
       default:
@@ -105,18 +105,19 @@ const FileUploader = () => {
 
   return (
     <SafeAreaView style={tw`flex-1 bg-white`}>
-      <ScrollView contentContainerStyle={tw`p-6`}>
+      <View style={tw`p-6`}>
         <View style={tw`flex-row items-center mb-6`}>
-          <Text style={tw`text-lg font-semibold mr-3`}>Para</Text>
+          <Text style={tw`text-lg font-semibold mr-3`}>Seleccionar clase:</Text>
           <TouchableOpacity onPress={() => setModalVisible(true)} style={tw`flex-row items-center bg-gray-200 rounded-full px-3 py-1`}>
             <Text style={tw`text-gray-700 mr-2`}>{selectedClass}</Text>
-            <Icon name="close" size={16} color="gray" />
+            <Icon name="chevron-down" size={16} color="gray" />
           </TouchableOpacity>
         </View>
 
-        <Text style={tw`text-xl font-bold mb-4`}>Subir recursos</Text>
+        <Text style={tw`text-xl font-bold mb-4`}>Subir recursos académicos</Text>
 
         <TouchableOpacity onPress={selectFile} style={tw`mb-6 bg-gray-200 border-dashed border border-gray-400 rounded-lg p-6 items-center`}>
+          <Icon name="upload" size={32} color="#666" style={tw`mb-2`} />
           <Text style={tw`text-gray-600`}>Elige un archivo o arrástralo aquí</Text>
         </TouchableOpacity>
 
@@ -126,7 +127,30 @@ const FileUploader = () => {
           renderItem={renderItem}
           contentContainerStyle={tw`w-full`}
         />
-      </ScrollView>
+      </View>
+
+      <Modal visible={isModalVisible} transparent={true} animationType="slide">
+        <View style={tw`flex-1 justify-center bg-black bg-opacity-50`}>
+          <View style={tw`bg-white mx-6 p-4 rounded-lg`}>
+            <Text style={tw`text-lg font-semibold mb-4`}>Selecciona una clase</Text>
+            {classes.map((cls, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => {
+                  setSelectedClass(cls);
+                  setModalVisible(false);
+                }}
+                style={tw`py-2 border-b border-gray-200`}
+              >
+                <Text style={tw`text-gray-700`}>{cls}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity onPress={() => setModalVisible(false)} className={`mt-4 p-2 bg-orange-400 rounded-lg`}>
+              <Text style={tw`text-white text-center`}>Cerrar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };

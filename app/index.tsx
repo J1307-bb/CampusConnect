@@ -56,17 +56,17 @@ function Bienvenida() {
               />
             </View>
 
-           {/* <CustomButton
+           <CustomButton
               title="Iniciar Sesión"
               handlePress={() => router.push("/iniciar-sesion" as any)}
               containerStyles="w-full mt-10"
-            /> */}
+            />
 
-           { <CustomButton
+            {/* <CustomButton
               title="Iniciar Sesión"
               handlePress={() => router.push("/inicio" as any)}
               containerStyles="w-full mt-10"
-            />}
+            /> */}
   
             {/* <Text className="text-sm font-pregular text-gray-400 mt-5 text-center">
             Organiza tus clases, consulta tus calificaciones y explora recursos académicos con Campus Connect.

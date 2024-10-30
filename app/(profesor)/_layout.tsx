@@ -12,6 +12,39 @@ const ProfesorLayout = () => {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="tareas"
+          options={{
+            headerShown: true,
+            headerBackTitle: "Atrás",
+            title: "Tareas Asignadas",
+          }}
+        />
+        <Stack.Screen
+          name="calificaciones"
+          options={{
+            headerShown: true,
+            headerBackTitle: "Atrás",
+            title: "Calificaciones",
+          }}
+        />
+        <Stack.Screen
+          name="recursos"
+          options={{
+            headerShown: true,
+            headerBackTitle: "Atrás",
+            title: "Recursos Académicos",
+          }}
+        />
+        <Stack.Screen
+          name="encuestas"
+          options={{
+            headerShown: true,
+            headerBackTitle: "Atrás",
+            title: "Encuestas",
+          }}
+        />
+
       </Stack>
     </>
   )

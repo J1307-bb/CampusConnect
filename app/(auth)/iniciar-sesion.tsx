@@ -85,6 +85,7 @@ const IniciarSesiom = () => {
           <TouchableOpacity
             className="bg-secondary-100 w-full rounded-lg p-3 mb-4"
             onPress={handleLogin}
+            onLongPress={() => router.push("/inicio" as any)}
           >
             <Text className="text-center text-white text-lg">Ingresar</Text>
           </TouchableOpacity>
