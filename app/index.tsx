@@ -1,13 +1,25 @@
 import CustomButton from "@/components/CustomButton";
-import Registro from "@/app/Registro"
 import Screen from "@/components/Screen";
-import { Link, router } from "expo-router";
+import { Link, Redirect, router } from "expo-router";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import Images from "@/constants/Images";
+import Loader from "@/components/Loader";
+import { useGlobalContext } from "@/context/GlobalProvider";
+import { signOut } from "@/lib/appwrite";
+import { useEffect } from "react";
 
 function Bienvenida() {
+
+  /* const { loading, isLogged } = useGlobalContext(); */
+
+  /* if (!loading && isLogged) return <Redirect href='/(tabs)' />; */
+
+  /* useEffect(() => {
+    signOut()
+  }, []); */
+
     return ( 
         <SafeAreaView className="bg-white h-full">
         {/* <Loader isLoading={loading} /> */}
@@ -44,11 +56,17 @@ function Bienvenida() {
               />
             </View>
 
-            <CustomButton
+           {/* <CustomButton
               title="Iniciar Sesión"
               handlePress={() => router.push("/iniciar-sesion" as any)}
               containerStyles="w-full mt-10"
-            />
+            /> */}
+
+           { <CustomButton
+              title="Iniciar Sesión"
+              handlePress={() => router.push("/inicio" as any)}
+              containerStyles="w-full mt-10"
+            />}
   
             {/* <Text className="text-sm font-pregular text-gray-400 mt-5 text-center">
             Organiza tus clases, consulta tus calificaciones y explora recursos académicos con Campus Connect.

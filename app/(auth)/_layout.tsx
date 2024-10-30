@@ -19,6 +19,13 @@ const AuthLayout = () => {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="recuperar"
+          options={{
+            headerTitle: "Recuperar Contraseña",
+            headerBackTitle: "Atrás"
+          }}
+        />
       </Stack>
 
       {/* <Loader isLoading={loading} /> */}

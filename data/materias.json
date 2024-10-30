@@ -1,0 +1,74 @@
+[
+  {
+    "id": "1",
+    "title": "Aplicaciones Web",
+    "grades": 97,
+    "year": "S2020",
+    "time": "09:00 - 11:00",
+    "location": "H-202",
+    "professor": "Jonathan Ricardo Rojas Arreola"
+  },
+  {
+    "id": "2",
+    "title": "Desarrollo Movil",
+    "grades": 87,
+    "year": "S2020",
+    "time": "09:00 - 11:00",
+    "location": "H-202",
+    "professor": "Jonathan Ricardo Rojas Arreola"
+  },
+  {
+    "id": "3",
+    "title": "Gestion de Proyectos de Software",
+    "grades": 100,
+    "year": "S2020",
+    "time": "09:00 - 11:00",
+    "location": "H-202",
+    "professor": "Maria Jose Sosa Gomez"
+  },
+  {
+    "id": "4",
+    "title": "Integradora",
+    "grades": 80,
+    "year": "S2020",
+    "time": "09:00 - 11:00",
+    "location": "H-202",
+    "professor": "Erika Alenjandra Bravo Calderon"
+  },
+  {
+    "id": "5",
+    "title": "Negociacion Empresarial",
+    "grades": 95,
+    "year": "S2020",
+    "time": "09:00 - 11:00",
+    "location": "H-202",
+    "professor": "Diana Gomez Dominguez"
+  },
+  {
+    "id": "6",
+    "title": "Creación de Videojuegos",
+    "grades": 70,
+    "year": "S2020",
+    "time": "09:00 - 11:00",
+    "location": "H-202",
+    "professor": "Luis Fernando Villafaña Rejon"
+  },
+  {
+    "id": "7",
+    "title": "Inglés XI",
+    "grades": 100,
+    "year": "S2020",
+    "time": "09:00 - 11:00",
+    "location": "H-202",
+    "professor": "Yolanda Innecita Herrera"
+  },
+  {
+    "id": "8",
+    "title": "Tutoria",
+    "grades": 79,
+    "year": "S2020",
+    "time": "09:00 - 11:00",
+    "location": "H-202",
+    "professor": "Eréndira Aleman Zeferino"
+  }
+]
