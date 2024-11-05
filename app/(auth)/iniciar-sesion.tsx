@@ -5,7 +5,8 @@ import CustomButton from "@/components/CustomButton";
 import { router, useRouter } from "expo-router";
 import Images from "@/constants/Images";
 import { useGlobalContext } from "@/context/GlobalProvider";
-import { getCurrentUser, signIn } from "@/lib/appwrite";
+import Session from "@/services/Session";
+import Http from "@/services/Http";
 
 const IniciarSesiom = () => {
   const [email, setEmail] = useState("");
@@ -16,10 +17,16 @@ const IniciarSesiom = () => {
 
   const router = useRouter();
 
-  const handleLogin = () => {
-    console.log("Email:", email);
-    console.log("Password:", password);
-    router.push("/(tabs)");
+  const handleLogin = async () => {
+    const { data = {} } = await Http.post('/login', { correo: email, contrasenia: password });
+
+    if (data.token) {
+        await Session.setSessionData(data.token);
+
+        router.push("/(tabs)");
+    } else {
+        console.log('Error al iniciar sesión');
+    }
   };
 
   /* const handleLogin = async () => {

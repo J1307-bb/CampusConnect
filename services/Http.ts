@@ -1,15 +1,14 @@
 import Utils from './Utils';
-import Session from './Session';
 
 const Http = {
-	apiUrl: 'http://localhost:9200',
+	apiUrl: 'https://campusconnectapi.azurewebsites.net',
 	getUrlPath: (path: string) => {
 		const url = path.startsWith('http') ? path : `${Http.apiUrl}${path}`;
 		return url;
 	},
 	prepareHeaders: (headers: any) => {
 		headers = headers || {};
-		headers.token = headers.token || Session.getAccessToken();
+		headers.token = headers.token;
 		return headers;
 	},
 	prepareSendData: (path: string, data: any, options: any) => {
@@ -57,16 +56,16 @@ const Http = {
 			throw error;
 		}
 	},
-	get: (path: string, data: any, options: any) => {
+	get: (path: string, data: any, options: any = {}) => {
 		return Http.doRequest(path, data, { ...options, method: 'GET' });
 	},
-	post: (path: string, data: any, options: any) => {
+	post: (path: string, data: any, options: any = {}) => {
 		return Http.doRequest(path, data, { ...options, method: 'POST' });
 	},
-	put: (path: string, data: any, options: any) => {
+	put: (path: string, data: any, options: any = {}) => {
 		return Http.doRequest(path, data, { ...options, method: 'PUT' });
 	},
-	delete: (path: string, data: any, options: any) => {
+	delete: (path: string, data: any, options: any = {}) => {
 		return Http.doRequest(path, data, { ...options, method: 'DELETE' });
 	},
 };

@@ -1,36 +1,27 @@
-import Http from './Http';
+import { Buffer } from 'buffer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Session = {
-    doLogin: async (email: string, password: string) => {
-        const { data = {} } = await Http.post('/login', { correo: email, contrasenia: password }, {});
-
-        if (data.token) {
-            Session.setAccessToken(data.token);
-            Session.setSessionData(data.token);
-            return true;
-        } else {
-            console.log('Error al iniciar sesión');
-            return false;
-        }
-    },
-    validateSession: () => {
+    validateSession: async () => {
         return !!Session.getAccessToken();
     },
-    getAccessToken: () => {
-        return localStorage.getItem('accessToken');
+    getAccessToken: async () => {
+        return await AsyncStorage.getItem('accessToken');
     },
-    setAccessToken: (accessToken: string) => {
-        localStorage.setItem('accessToken', accessToken);
+    setAccessToken: async (accessToken: string) => {
+        await AsyncStorage.setItem('accessToken', accessToken);
     },
-    removeAccessToken: () => {
-        localStorage.removeItem('accessToken');
+    removeAccessToken: async () => {
+        await AsyncStorage.removeItem('accessToken');
     },
-    setSessionData: (token: string) => {
-        const data = {};
-        localStorage.setItem('sessionData', JSON.stringify(data));
+    setSessionData: async (token: string) => {
+        const parts = token.split('.').map(part => Buffer.from(part.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString());
+        const payload = JSON.parse(parts[1]);
+
+        await AsyncStorage.setItem('sessionData', JSON.stringify(payload));
     },
-    getSessionData: () => {
-        const sessionData = localStorage.getItem('sessionData');
+    getSessionData: async () => {
+        const sessionData = await AsyncStorage.getItem('sessionData');
         return sessionData ? JSON.parse(sessionData) : {};
     },
 };
