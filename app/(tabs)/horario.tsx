@@ -197,7 +197,7 @@ const ScheduleScreen = () => {
           data={schedule[selectedDay]}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
-            <View className={`p-4 rounded-lg mb-4 border border-gray-400 shadow-sm bg-[#ede6db]`}>
+            <View className={`p-4 rounded-lg mb-4 border border-orange-400/70 shadow-sm bg-white`}>
               <Text className="text-xl font-bold mb-2">{item.course}</Text>
               <View className="flex-row m-1">
                 <TabBarIcon name="time-outline" size={16} color="gray" />

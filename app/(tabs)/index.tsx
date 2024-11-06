@@ -1,93 +1,97 @@
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import Screen from "@/components/Screen";
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import { SegmentedButtons, useTheme } from "react-native-paper";
 import materias from "@/data/materias.json";
+import { styled } from "nativewind";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+
+const CategoryCard = styled(View);
+const NoticeCard = styled(View);
 
 export default function InicioTab() {
-  const sections = ["Avisos", "Eventos"];
-
   const [currentSection, setCurrentSection] = useState("Avisos");
   const handleSectionChange = (section: string) => {
     setCurrentSection(section);
   };
 
-  const theme = useTheme();
-
   return (
-    <Screen>
+    <Screen className="bg-gray-100">
       <ScrollView className="flex-1">
         {/* Saludo */}
         <View className="px-4 py-4">
           <View className="flex-row justify-between items-center">
-            <Text className="text-lg font-bold">
-              Hola, <Text className="text-yellow-500">Abril</Text>
-            </Text>
-            <TabBarIcon name="notifications" size={20} color="purple" />
+              <Text className="text-2xl font-bold text-gray-800">
+                Hola, <Text className="text-yellow-500">Abril</Text>
+              </Text>
+              <TouchableOpacity>
+                <TabBarIcon name="notifications" size={24} color="orange" />
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+
 
         {/* Categorías */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          className="px-4 py-2"
+          className="px-6 py-2 mb-6"
         >
           {materias.map((category, index) => (
-            <TouchableOpacity key={index} className="mr-4">
-              <View className="w-24 h-36 bg-gray-200 rounded-lg overflow-hidden">
+            <TouchableOpacity key={index} className="mr-3">
+              <CategoryCard className="w-28 h-40 bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200">
                 <Image
                   source={{ uri: "https://via.placeholder.com/100" }}
-                  className="w-full h-20"
+                  className="w-full h-20 rounded-t-2xl"
                 />
-                <Text className="text-center justify-center items-center m-2 text-sm font-semibold">
-                  {category.title}
-                </Text>
-              </View>
+                <View className="p-2 items-center justify-center">
+                  <Text className="text-center  text-sm font-semibold text-gray-800">
+                    {category.title}
+                  </Text>
+                </View>
+              </CategoryCard>
             </TouchableOpacity>
           ))}
         </ScrollView>
 
-        {/* Clases de hoy */}
-        <View className="px-4 py-4">
-          <View className="flex-row justify-between items-center">
-            <Text className="text-lg font-bold">Clases de Hoy:</Text>
-
+        {/* Clases de Hoy */}
+        <View className="px-6 mb-6">
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-2xl font-bold text-gray-800">Clases de Hoy:</Text>
             <TouchableOpacity
               className="flex-row items-center"
-              onPress={() => router.push("/horario" as any)}
+              onPress={() => router.push("/horario")}
             >
-              <Text className="text-orange-500 ">Ver Horario</Text>
+              <Text className="text-orange-500 font-semibold mr-1">Ver Horario</Text>
               <TabBarIcon name="chevron-forward" size={20} color="orange" />
             </TouchableOpacity>
           </View>
-          <View className="bg-[#ede6db] p-4 mt-4 rounded-lg border border-gray-400">
-            <Text className="text-lg font-semibold">Desarrollo Movil</Text>
+          <View className="bg-white p-5 rounded-2xl shadow-md border border-gray-200">
+            <Text className="text-lg font-semibold text-gray-800">Desarrollo Móvil</Text>
             <View className="flex-row items-center mt-1">
-              <Text className="text-gray-500">09:00 - 11:00</Text>
-              <Text className="text-gray-500 ml-4">Main auditorium</Text>
+              <Icon name="clock-outline" size={16} color="gray" />
+              <Text className="text-gray-500 ml-2">09:00 - 11:00</Text>
+              <Icon name="map-marker-outline" size={16} color="gray" className="ml-4" />
+              <Text className="text-gray-500 ml-2">Auditorio Principal</Text>
             </View>
-            <Text className="text-gray-700 mt-1">Mam Mahnoor</Text>
+            <Text className="text-gray-700 mt-2">Mam Mahnoor</Text>
           </View>
         </View>
 
         {/* Noticias y Eventos */}
-        <View className="px-4 ">
-          <View className="flex-row mb-3">
+        <View className="px-6">
+          <View className="flex-row mb-4">
             <TouchableOpacity
-              className={`border-b-2 ${
-                currentSection === "Avisos"
-                  ? "border-purple-500"
-                  : "border-transparent"
+              className={`border-b-2  ${
+                currentSection === "Avisos" ? "border-orange-500" : "border-transparent"
               }`}
               onPress={() => handleSectionChange("Avisos")}
             >
               <Text
                 className={`text-xl ${
                   currentSection === "Avisos"
-                    ? "text-purple-500 font-bold"
+                    ? "text-orange-500 font-bold"
                     : "text-gray-500"
                 }`}
               >
@@ -96,17 +100,15 @@ export default function InicioTab() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              className={`ml-4 border-b-2 ${
-                currentSection === "Eventos"
-                  ? "border-purple-500"
-                  : "border-transparent"
+              className={`ml-6 border-b-2  ${
+                currentSection === "Eventos" ? "border-orange-500" : "border-transparent"
               }`}
               onPress={() => handleSectionChange("Eventos")}
             >
               <Text
                 className={`text-xl ${
                   currentSection === "Eventos"
-                    ? "text-purple-500 font-bold"
+                    ? "text-orange-500 font-bold"
                     : "text-gray-500"
                 }`}
               >
@@ -117,72 +119,57 @@ export default function InicioTab() {
 
           {currentSection === "Avisos" && (
             <>
-              <View className="bg-white p-4 mb-4 rounded-lg border border-orange-400 shadow-md">
-                <Text className="text-md font-semibold">
+              <NoticeCard className="bg-white p-5 mb-4 rounded-2xl shadow-md border border-orange-400">
+                <Text className="text-lg font-semibold text-gray-800">
                   Inscripciones para Talleres Extracurriculares
                 </Text>
-                <Text className="text-gray-600">
-                  Las inscripciones para los talleres extracurriculares del
-                  semestre estarán abiertas del 15 al 25 de noviembre...
+                <Text className="text-gray-600 mt-1">
+                  Las inscripciones para los talleres extracurriculares del semestre estarán abiertas del 15 al 25 de noviembre...
                 </Text>
-                <Text className="text-sm text-gray-400 mt-1">
-                  15 de noviembre de 2024
-                </Text>
-              </View>
+                <Text className="text-sm text-gray-400 mt-2">15 de noviembre de 2024</Text>
+              </NoticeCard>
 
-              <View className="bg-white p-4 mb-4 rounded-lg border border-orange-400 shadow-md">
-                <Text className="text-md font-semibold">
+              <NoticeCard className="bg-white p-5 mb-4 rounded-2xl shadow-md border border-orange-400">
+                <Text className="text-lg font-semibold text-gray-800">
                   Cambio en el Horario de Clases
                 </Text>
-                <Text className="text-gray-600">
-                  Debido a una actividad especial, el horario de clases del día
-                  5 de diciembre será modificado...
+                <Text className="text-gray-600 mt-1">
+                  Debido a una actividad especial, el horario de clases del día 5 de diciembre será modificado...
                 </Text>
-                <Text className="text-sm text-gray-400 mt-1">
-                  5 de diciembre de 2024
-                </Text>
-              </View>
+                <Text className="text-sm text-gray-400 mt-2">5 de diciembre de 2024</Text>
+              </NoticeCard>
             </>
           )}
 
           {currentSection === "Eventos" && (
             <>
-              <View className="bg-white p-4 mb-4 rounded-lg border border-orange-400 shadow-md">
-                <Text className="text-md font-semibold">
+              <NoticeCard className="bg-white p-5 mb-4 rounded-2xl shadow-md border border-orange-400">
+                <Text className="text-lg font-semibold text-gray-800">
                   Reunión de Padres de Familia
                 </Text>
-                <Text className="text-gray-600">
-                  Reunión informativa para discutir el rendimiento académico de
-                  los estudiantes..
+                <Text className="text-gray-600 mt-1">
+                  Reunión informativa para discutir el rendimiento académico de los estudiantes..
                 </Text>
-                <Text className="text-sm text-gray-400 mt-1">
-                  10 de noviembre de 2024
-                </Text>
-              </View>
+                <Text className="text-sm text-gray-400 mt-2">10 de noviembre de 2024</Text>
+              </NoticeCard>
 
-              <View className="bg-white p-4 mb-4 rounded-lg border border-orange-400 shadow-md">
-                <Text className="text-md font-semibold">Feria de Ciencias</Text>
-                <Text className="text-gray-600">
-                  Exhibición de proyectos científicos realizados por los
-                  estudiantes de secundaria y preparatoria...
+              <NoticeCard className="bg-white p-5 mb-4 rounded-2xl shadow-md border border-orange-400">
+                <Text className="text-lg font-semibold text-gray-800">Feria de Ciencias</Text>
+                <Text className="text-gray-600 mt-1">
+                  Exhibición de proyectos científicos realizados por los estudiantes de secundaria y preparatoria...
                 </Text>
-                <Text className="text-sm text-gray-400 mt-1">
-                  20 de noviembre de 2024
-                </Text>
-              </View>
+                <Text className="text-sm text-gray-400 mt-2">20 de noviembre de 2024</Text>
+              </NoticeCard>
 
-              <View className="bg-white p-4 mb-4 rounded-lg border border-orange-400 shadow-md">
-                <Text className="text-md font-semibold">
+              <NoticeCard className="bg-white p-5 mb-4 rounded-2xl shadow-md border border-orange-400">
+                <Text className="text-lg font-semibold text-gray-800">
                   Celebración de Fin de Año Escolar
                 </Text>
-                <Text className="text-gray-600">
-                  Ceremonia de clausura con actividades artísticas y entrega de
-                  reconocimientos a estudiantes destacados...
+                <Text className="text-gray-600 mt-1">
+                  Ceremonia de clausura con actividades artísticas y entrega de reconocimientos a estudiantes destacados...
                 </Text>
-                <Text className="text-sm text-gray-400 mt-1">
-                  15 de diciembre de 2024
-                </Text>
-              </View>
+                <Text className="text-sm text-gray-400 mt-2">15 de diciembre de 2024</Text>
+              </NoticeCard>
             </>
           )}
         </View>
