@@ -1,4 +1,5 @@
 import Utils from './Utils';
+import Session from './Session';
 
 const Http = {
 	apiUrl: 'https://campusconnectapi.azurewebsites.net',
@@ -6,16 +7,16 @@ const Http = {
 		const url = path.startsWith('http') ? path : `${Http.apiUrl}${path}`;
 		return url;
 	},
-	prepareHeaders: (headers: any) => {
+	prepareHeaders: async (headers: any) => {
 		headers = headers || {};
-		headers.token = headers.token;
+		headers.token = headers.token || await Session.getAccessToken();
 		return headers;
 	},
-	prepareSendData: (path: string, data: any, options: any) => {
+	prepareSendData: async (path: string, data: any, options: any) => {
 		const { headers, method = 'GET', sendFile = false } = options;
 
 		let url = Http.getUrlPath(path);
-		let headersData = Http.prepareHeaders(headers) || {};
+		let headersData = await  Http.prepareHeaders(headers) || {};
 		let body;
 
 		if (method.toUpperCase() !== 'GET') {
@@ -36,9 +37,14 @@ const Http = {
 	},
 	doRequest: async (path: string, data: any, options: any, tryCount: number = 1): Promise<any> => {
 		const { json = true, method = 'GET', errors } = options;
-		const { headers, url, body } = Http.prepareSendData(path, data, options);
+		const { headers, url, body } = await Http.prepareSendData(path, data, options);
 
 		try {
+			console.log('url', url);
+			console.log('body', body);
+			console.log('headers', headers);
+			console.log('method', method);
+
 			const response = await fetch(url, { method, headers, body });
 			if (json) {
 				return {
@@ -56,16 +62,16 @@ const Http = {
 			throw error;
 		}
 	},
-	get: (path: string, data: any, options: any = {}) => {
+	get: (path: string, data: any, options?: any) => {
 		return Http.doRequest(path, data, { ...options, method: 'GET' });
 	},
-	post: (path: string, data: any, options: any = {}) => {
+	post: (path: string, data: any, options?: any) => {
 		return Http.doRequest(path, data, { ...options, method: 'POST' });
 	},
-	put: (path: string, data: any, options: any = {}) => {
+	put: (path: string, data: any, options?: any) => {
 		return Http.doRequest(path, data, { ...options, method: 'PUT' });
 	},
-	delete: (path: string, data: any, options: any = {}) => {
+	delete: (path: string, data: any, options?: any) => {
 		return Http.doRequest(path, data, { ...options, method: 'DELETE' });
 	},
 };

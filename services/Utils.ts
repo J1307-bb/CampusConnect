@@ -71,5 +71,27 @@ const Utils = {
 
         return data;
     },
+    getNestedData: (name:string, data:any) => {
+        if (!name) {
+            return '';
+        }
+        const nested = name.split('.');
+        let value = data;
+        for (const nest of nested) {
+            if (typeof value === 'string') {
+                try {
+                    value = JSON.parse(value);
+                } catch (error) {
+                    return console.error('Error parsing JSON');
+                }
+            }
+            value = value instanceof FormData ? value.get(nest) : value[nest];
+
+            if ((value === undefined || value === null)) {
+                return '';
+            }
+        }
+        return value;
+    },
 };
 export default Utils;

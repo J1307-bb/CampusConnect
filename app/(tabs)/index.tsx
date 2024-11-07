@@ -1,20 +1,41 @@
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import Screen from "@/components/Screen";
 import { Link, router } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SegmentedButtons, useTheme } from "react-native-paper";
-import materias from "@/data/materias.json";
+import Session from "@/services/Session";
+import Catalogs from "@/services/Catalogs";
+import IMateria from "@/interfaces/IMateria";
 
 export default function InicioTab() {
   const sections = ["Avisos", "Eventos"];
 
   const [currentSection, setCurrentSection] = useState("Avisos");
+  const [materias, setMaterias] = useState<IMateria[]>([]);
+  const [sessionData, setSessionData] = useState({
+    nombre: '',
+    idGrupo: {
+      id:''
+    },
+  });
   const handleSectionChange = (section: string) => {
     setCurrentSection(section);
   };
 
   const theme = useTheme();
+
+  const getData = async () => {
+    const sessionData: any = await Session.getSessionData();
+    const materiasData: any = await Catalogs.getMaterias();
+
+    setSessionData(sessionData);
+    setMaterias(materiasData);
+  }
+
+  useEffect(() => {
+    getData();
+  }, []);
 
   return (
     <Screen>
@@ -23,7 +44,7 @@ export default function InicioTab() {
         <View className="px-4 py-4">
           <View className="flex-row justify-between items-center">
             <Text className="text-lg font-bold">
-              Hola, <Text className="text-yellow-500">Abril</Text>
+              Hola, <Text className="text-yellow-500">{sessionData.nombre}</Text>
             </Text>
             <TabBarIcon name="notifications" size={20} color="purple" />
           </View>
@@ -37,7 +58,7 @@ export default function InicioTab() {
         >
           {materias.map((category, index) => (
             <TouchableOpacity key={index} className="mr-4">
-              <View className="w-24 h-36 bg-gray-200 rounded-lg overflow-hidden">
+              {/* <View className="w-24 h-36 bg-gray-200 rounded-lg overflow-hidden">
                 <Image
                   source={{ uri: "https://via.placeholder.com/100" }}
                   className="w-full h-20"
@@ -45,7 +66,7 @@ export default function InicioTab() {
                 <Text className="text-center justify-center items-center m-2 text-sm font-semibold">
                   {category.title}
                 </Text>
-              </View>
+              </View> */}
             </TouchableOpacity>
           ))}
         </ScrollView>

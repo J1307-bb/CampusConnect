@@ -22,7 +22,7 @@ const IniciarSesiom = () => {
 
     if (data.token) {
         await Session.setSessionData(data.token);
-
+        await Session.setAccessToken(data.token);
         router.push("/(tabs)");
     } else {
         console.log('Error al iniciar sesión');

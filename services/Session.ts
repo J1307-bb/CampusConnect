@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Session = {
     validateSession: async () => {
-        return !!Session.getAccessToken();
+        return !!await Session.getAccessToken();
     },
     getAccessToken: async () => {
         return await AsyncStorage.getItem('accessToken');

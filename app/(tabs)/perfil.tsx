@@ -42,10 +42,8 @@ export default function PerfilTab() {
     
   }
 
-  let d = {};
   const getSessionData = async () => {
     const data: any = await Session.getSessionData();
-    console.log(typeof data, data);
     setSessionData(data);
   }
 
