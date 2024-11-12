@@ -9,7 +9,7 @@ const CalificacionCard = ({ materia: { calificacion, clase } }: any) => {
   };
   
   return (
-    <View className="flex-row w-full justify-between items-center border border-gray-400 p-4 mb-4 rounded-xl shadow-sm bg-white">
+    <View className="flex-row w-full justify-between items-center border border-orange-400/50 p-4 mb-4 rounded-xl shadow-sm bg-white">
       <View className="">
         <Text className="text-lg font-bold">{clase.materia}</Text>
         {/* <Text className="text-gray-400 text-sm pl-1">

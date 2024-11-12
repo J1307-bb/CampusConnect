@@ -10,8 +10,6 @@ import Utils from "@/services/Utils";
 import { IMateria, IAviso } from "@/interfaces/IInterfaces";
 
 export default function InicioTab() {
-  const sections = ["Avisos", "Eventos"];
-
   const [currentSection, setCurrentSection] = useState("Avisos");
   const [materias, setMaterias] = useState<IMateria[]>([]);
   const [avisos, setAvisos] = useState<IAviso[]>([]);
@@ -48,7 +46,7 @@ export default function InicioTab() {
   }, []);
 
   return (
-    <Screen>
+    <Screen className="bg-gray-100">
       <ScrollView className="flex-1">
         {/* Saludo */}
         <View className="px-4 py-4">
@@ -59,12 +57,11 @@ export default function InicioTab() {
             <TabBarIcon name="notifications" size={20} color="purple" />
           </View>
         </View>
-
         {/* Categorías */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          className="px-4 py-2"
+          className="px-6 py-2 mb-6"
         >
           {materias.map(({ materia, id, imagen }) => (
             <TouchableOpacity key={id} className="mr-4">
@@ -80,17 +77,15 @@ export default function InicioTab() {
             </TouchableOpacity>
           ))}
         </ScrollView>
-
-        {/* Clases de hoy */}
-        <View className="px-4 py-4">
-          <View className="flex-row justify-between items-center">
-            <Text className="text-lg font-bold">Clases de Hoy:</Text>
-
+        {/* Clases de Hoy */}
+        <View className="px-6 mb-6">
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-2xl font-bold text-gray-800">Clases de Hoy:</Text>
             <TouchableOpacity
               className="flex-row items-center"
-              onPress={() => router.push("/horario" as any)}
+              onPress={() => router.push("/horario")}
             >
-              <Text className="text-orange-500 ">Ver Horario</Text>
+              <Text className="text-orange-500 font-semibold mr-1">Ver Horario</Text>
               <TabBarIcon name="chevron-forward" size={20} color="orange" />
             </TouchableOpacity>
           </View>
@@ -107,20 +102,18 @@ export default function InicioTab() {
         </View>
 
         {/* Noticias y Eventos */}
-        <View className="px-4 ">
-          <View className="flex-row mb-3">
+        <View className="px-6">
+          <View className="flex-row mb-4">
             <TouchableOpacity
-              className={`border-b-2 ${
-                currentSection === "Avisos"
-                  ? "border-purple-500"
-                  : "border-transparent"
+              className={`border-b-2  ${
+                currentSection === "Avisos" ? "border-orange-500" : "border-transparent"
               }`}
               onPress={() => handleSectionChange("Avisos")}
             >
               <Text
                 className={`text-xl ${
                   currentSection === "Avisos"
-                    ? "text-purple-500 font-bold"
+                    ? "text-orange-500 font-bold"
                     : "text-gray-500"
                 }`}
               >
@@ -129,17 +122,15 @@ export default function InicioTab() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              className={`ml-4 border-b-2 ${
-                currentSection === "Eventos"
-                  ? "border-purple-500"
-                  : "border-transparent"
+              className={`ml-6 border-b-2  ${
+                currentSection === "Eventos" ? "border-orange-500" : "border-transparent"
               }`}
               onPress={() => handleSectionChange("Eventos")}
             >
               <Text
                 className={`text-xl ${
                   currentSection === "Eventos"
-                    ? "text-purple-500 font-bold"
+                    ? "text-orange-500 font-bold"
                     : "text-gray-500"
                 }`}
               >
