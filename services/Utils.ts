@@ -49,11 +49,25 @@ const Utils = {
         const rgnx = /^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/g;
         return rgnx.test(email)
     },
-    formatDate: (date: string) => {
+    formatDate: (date: string, opts?:any) => {
         const d = new Date(date);
         const day = String(d.getDate()).padStart(2, '0');
         const month = String(d.getMonth() + 1).padStart(2, '0');
         const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
+    },
+    formatFirebaseDate: (date: any) => {
+        const { seconds } = date || {};
+
+        if (!seconds) {
+            return '';
+        }
+
+        const d = new Date(seconds * 1000);
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+
         return `${day}/${month}/${year}`;
     },
     getFormData: (form: any) => {
@@ -92,6 +106,14 @@ const Utils = {
             }
         }
         return value;
+    },
+    getToday: (lang: string = 'es') => {
+        const days: { [key: string]: string[] } = {
+            es: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+            en: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+        };
+        const today = new Date().getDay();
+        return days[lang][today] || '';
     },
 };
 export default Utils;

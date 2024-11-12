@@ -3,24 +3,41 @@ import { View, Text, FlatList, Pressable } from "react-native";
 import { styled } from "nativewind";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
+import { IMateria } from "@/interfaces/IInterfaces";
+import Catalogs from "@/services/Catalogs";
 
 const ScheduleScreen = () => {
   const days = [
-    { key: "M", label: "Lun" },
-    { key: "T", label: "Mar" },
-    { key: "W", label: "Mié" },
-    { key: "Th", label: "Jue" },
-    { key: "F", label: "Vie" },
+    { key: "lunes", label: "Lun" },
+    { key: "martes", label: "Mar" },
+    { key: "miercoles", label: "Mié" },
+    { key: "jueves", label: "Jue" },
+    { key: "viernes", label: "Vie" },
   ];
 
   // Estado para el día seleccionado y la fecha actual
   const [selectedDay, setSelectedDay] = useState<keyof typeof schedule>("");
   const [currentDate, setCurrentDate] = useState(new Date());
-
+  const [materias, setMaterias] = useState<IMateria[]>([]);
+  const [materiasFiltered, setMateriaFiltered] = useState<IMateria[]>([]);
   useEffect(() => {
     const today = new Date().getDay();
-    const initialDay = today === 0 || today === 6 ? "M" : days[today - 1].key;
+    const initialDay = today === 0 || today === 6 ? "lunes" : days[today - 1].key;
     setSelectedDay(initialDay);
+    setMateriaFiltered(materias.filter((item) => item.dia === initialDay));
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const materiasData = await Catalogs.getMaterias();
+        setMaterias(materiasData);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const schedule: {
@@ -151,6 +168,7 @@ const ScheduleScreen = () => {
 
   const handleDayPress = (dayKey: string) => {
     setSelectedDay(dayKey);
+    setMateriaFiltered(materias.filter((item) => item.dia === dayKey));
   };
 
   const DayButton = styled(Pressable);
@@ -194,22 +212,22 @@ const ScheduleScreen = () => {
 
         {/* Lista de clases */}
         <FlatList
-          data={schedule[selectedDay]}
+          data={materiasFiltered}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
             <View className={`p-4 rounded-lg mb-4 border border-gray-400 shadow-sm bg-[#ede6db]`}>
-              <Text className="text-xl font-bold mb-2">{item.course}</Text>
+              <Text className="text-xl font-bold mb-2">{item.materia}</Text>
               <View className="flex-row m-1">
                 <TabBarIcon name="time-outline" size={16} color="gray" />
-                <Text className="text-gray-500 mx-1">{item.time}</Text>
+                <Text className="text-gray-500 mx-1">{item.horario}</Text>
               </View>
               <View className="flex-row m-1">
                 <TabBarIcon name="location-outline" size={16} color="gray" />
-                <Text className="text-gray-500 mx-1">{item.room}</Text>
+                <Text className="text-gray-500 mx-1">{item.aula}</Text>
               </View>
               <View className="flex-row m-1">
                 <TabBarIcon name="person-circle-outline" size={16} color="gray" />
-                <Text className="text-gray-500 mx-1">{item.teacher}</Text>
+                <Text className="text-gray-500 mx-1">{item.profesor.nombre} {item.profesor.apellidos}</Text>
               </View>
             </View>
           )}

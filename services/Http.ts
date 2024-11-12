@@ -13,24 +13,24 @@ const Http = {
 		return headers;
 	},
 	prepareSendData: async (path: string, data: any, options: any) => {
-		const { headers, method = 'GET', sendFile = false } = options;
+		const { headers, method = 'GET', sendFile } = options;
 
 		let url = Http.getUrlPath(path);
-		let headersData = await  Http.prepareHeaders(headers) || {};
+		let headersData = await Http.prepareHeaders(headers) || {};
 		let body;
 
 		if (method.toUpperCase() !== 'GET') {
 			body = data;
 			if (!sendFile) {
-				headersData = Http.prepareHeaders({
+				headersData = await Http.prepareHeaders({
 					...headersData,
 					"Content-Type": "application/json",
 				});
 				body = JSON.stringify(data);
 			}
 		} else if (data && Object.keys(data).length > 0) {
-			const token = url.includes('?') ? '&' : '?';
-			url += token + Utils.objectToQueryString(data);
+			const character = url.includes('?') ? '&' : '?';
+			url += character + Utils.objectToQueryString(data);
 		}
 
 		return { headers: headersData, url, body };
@@ -40,11 +40,6 @@ const Http = {
 		const { headers, url, body } = await Http.prepareSendData(path, data, options);
 
 		try {
-			console.log('url', url);
-			console.log('body', body);
-			console.log('headers', headers);
-			console.log('method', method);
-
 			const response = await fetch(url, { method, headers, body });
 			if (json) {
 				return {

@@ -2,7 +2,7 @@ import { AnimatedMateriaCard } from "@/components/cards/MateriaCard";
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import Screen from "@/components/Screen";
 import { useState, useEffect } from "react";
-import IMateria from "@/interfaces/IMateria";
+import { IMateria } from "@/interfaces/IInterfaces";
 import Catalogs from "@/services/Catalogs";
 import {
   FlatList,
@@ -26,6 +26,7 @@ export default function ClasesTab() {
   useEffect(() => {
     getData();
   }, []);
+
   // Filtro de clases por búsqueda
   const filteredClasses = materias.filter((cls) =>
     cls.materia?.toLowerCase().includes(searchText.toLowerCase())

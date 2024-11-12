@@ -6,13 +6,15 @@ import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SegmentedButtons, useTheme } from "react-native-paper";
 import Session from "@/services/Session";
 import Catalogs from "@/services/Catalogs";
-import IMateria from "@/interfaces/IMateria";
+import Utils from "@/services/Utils";
+import { IMateria, IAviso } from "@/interfaces/IInterfaces";
 
 export default function InicioTab() {
   const sections = ["Avisos", "Eventos"];
 
   const [currentSection, setCurrentSection] = useState("Avisos");
   const [materias, setMaterias] = useState<IMateria[]>([]);
+  const [avisos, setAvisos] = useState<IAviso[]>([]);
   const [sessionData, setSessionData] = useState({
     nombre: '',
     idGrupo: {
@@ -25,16 +27,24 @@ export default function InicioTab() {
 
   const theme = useTheme();
 
-  const getData = async () => {
-    const sessionData: any = await Session.getSessionData();
-    const materiasData: any = await Catalogs.getMaterias();
-
-    setSessionData(sessionData);
-    setMaterias(materiasData);
-  }
-
   useEffect(() => {
-    getData();
+    const fetchData = async () => {
+      try {
+        const [sessionData, materiasData, avisosData] = await Promise.all([
+          Session.getSessionData(),
+          Catalogs.getMaterias(),
+          Catalogs.getAvisos(),
+        ]);
+
+        setSessionData(sessionData);
+        setMaterias(materiasData);
+        setAvisos(avisosData);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      }
+    };
+
+    fetchData();
   }, []);
 
   return (
@@ -56,17 +66,17 @@ export default function InicioTab() {
           showsHorizontalScrollIndicator={false}
           className="px-4 py-2"
         >
-          {materias.map((category, index) => (
-            <TouchableOpacity key={index} className="mr-4">
-              {/* <View className="w-24 h-36 bg-gray-200 rounded-lg overflow-hidden">
+          {materias.map(({ materia, id, imagen }) => (
+            <TouchableOpacity key={id} className="mr-4">
+              <View className="w-24 h-36 bg-gray-200 rounded-lg overflow-hidden">
                 <Image
-                  source={{ uri: "https://via.placeholder.com/100" }}
+                  source={{ uri: imagen || "https://via.placeholder.com/100" }}
                   className="w-full h-20"
                 />
                 <Text className="text-center justify-center items-center m-2 text-sm font-semibold">
-                  {category.title}
+                  {materia}
                 </Text>
-              </View> */}
+              </View>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -84,14 +94,16 @@ export default function InicioTab() {
               <TabBarIcon name="chevron-forward" size={20} color="orange" />
             </TouchableOpacity>
           </View>
-          <View className="bg-[#ede6db] p-4 mt-4 rounded-lg border border-gray-400">
-            <Text className="text-lg font-semibold">Desarrollo Movil</Text>
-            <View className="flex-row items-center mt-1">
-              <Text className="text-gray-500">09:00 - 11:00</Text>
-              <Text className="text-gray-500 ml-4">Main auditorium</Text>
-            </View>
-            <Text className="text-gray-700 mt-1">Mam Mahnoor</Text>
-          </View>
+          {materias.filter((item) => item.dia === Utils.getToday().toLowerCase()).map(({ id, materia, horario, aula, profesor }) => (
+              <View className="bg-[#ede6db] p-4 mt-4 rounded-lg border border-gray-400" key={id}>
+                <Text className="text-lg font-semibold">{materia}</Text>
+                <View className="flex-row items-center mt-1">
+                  <Text className="text-gray-500">{horario}</Text>
+                  <Text className="text-gray-500 ml-4">{aula}</Text>
+                </View>
+                <Text className="text-gray-700 mt-1">{profesor.nombre} {profesor.apellidos}</Text>
+              </View>
+          ))}
         </View>
 
         {/* Noticias y Eventos */}
@@ -138,72 +150,37 @@ export default function InicioTab() {
 
           {currentSection === "Avisos" && (
             <>
-              <View className="bg-white p-4 mb-4 rounded-lg border border-orange-400 shadow-md">
-                <Text className="text-md font-semibold">
-                  Inscripciones para Talleres Extracurriculares
-                </Text>
-                <Text className="text-gray-600">
-                  Las inscripciones para los talleres extracurriculares del
-                  semestre estarán abiertas del 15 al 25 de noviembre...
-                </Text>
-                <Text className="text-sm text-gray-400 mt-1">
-                  15 de noviembre de 2024
-                </Text>
-              </View>
-
-              <View className="bg-white p-4 mb-4 rounded-lg border border-orange-400 shadow-md">
-                <Text className="text-md font-semibold">
-                  Cambio en el Horario de Clases
-                </Text>
-                <Text className="text-gray-600">
-                  Debido a una actividad especial, el horario de clases del día
-                  5 de diciembre será modificado...
-                </Text>
-                <Text className="text-sm text-gray-400 mt-1">
-                  5 de diciembre de 2024
-                </Text>
-              </View>
+              {avisos.filter((item) => item.tipo === 1).map(({ id, titulo, descripcion, fechaPublicacion }) => (
+                <View className="bg-white p-4 mb-4 rounded-lg border border-orange-400 shadow-md" key={id}>
+                  <Text className="text-md font-semibold">
+                    {titulo}
+                  </Text>
+                  <Text className="text-gray-600">
+                    {descripcion}
+                  </Text>
+                  <Text className="text-sm text-gray-400 mt-1">
+                    {Utils.formatFirebaseDate(fechaPublicacion)}
+                  </Text>
+                </View>
+              ))}
             </>
           )}
 
           {currentSection === "Eventos" && (
             <>
-              <View className="bg-white p-4 mb-4 rounded-lg border border-orange-400 shadow-md">
-                <Text className="text-md font-semibold">
-                  Reunión de Padres de Familia
-                </Text>
-                <Text className="text-gray-600">
-                  Reunión informativa para discutir el rendimiento académico de
-                  los estudiantes..
-                </Text>
-                <Text className="text-sm text-gray-400 mt-1">
-                  10 de noviembre de 2024
-                </Text>
-              </View>
-
-              <View className="bg-white p-4 mb-4 rounded-lg border border-orange-400 shadow-md">
-                <Text className="text-md font-semibold">Feria de Ciencias</Text>
-                <Text className="text-gray-600">
-                  Exhibición de proyectos científicos realizados por los
-                  estudiantes de secundaria y preparatoria...
-                </Text>
-                <Text className="text-sm text-gray-400 mt-1">
-                  20 de noviembre de 2024
-                </Text>
-              </View>
-
-              <View className="bg-white p-4 mb-4 rounded-lg border border-orange-400 shadow-md">
-                <Text className="text-md font-semibold">
-                  Celebración de Fin de Año Escolar
-                </Text>
-                <Text className="text-gray-600">
-                  Ceremonia de clausura con actividades artísticas y entrega de
-                  reconocimientos a estudiantes destacados...
-                </Text>
-                <Text className="text-sm text-gray-400 mt-1">
-                  15 de diciembre de 2024
-                </Text>
-              </View>
+              {avisos.filter((item) => item.tipo === 2).map(({ id, titulo, descripcion, fechaPublicacion }) => (
+                <View className="bg-white p-4 mb-4 rounded-lg border border-orange-400 shadow-md" key={id}>
+                  <Text className="text-md font-semibold">
+                    {titulo}
+                  </Text>
+                  <Text className="text-gray-600">
+                    {descripcion}
+                  </Text>
+                  <Text className="text-sm text-gray-400 mt-1">
+                    {Utils.formatFirebaseDate(fechaPublicacion)}
+                  </Text>
+                </View>
+              ))}
             </>
           )}
         </View>
