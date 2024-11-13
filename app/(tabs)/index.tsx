@@ -6,6 +6,7 @@ import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SegmentedButtons, useTheme } from "react-native-paper";
 import Session from "@/services/Session";
 import Catalogs from "@/services/Catalogs";
+import Cache from "@/services/Cache";
 import Utils from "@/services/Utils";
 import { IMateria, IAviso } from "@/interfaces/IInterfaces";
 
@@ -30,7 +31,7 @@ export default function InicioTab() {
       try {
         const [sessionData, materiasData, avisosData] = await Promise.all([
           Session.getSessionData(),
-          Catalogs.getMaterias(),
+          Cache.getData("materias"),
           Catalogs.getAvisos(),
         ]);
 

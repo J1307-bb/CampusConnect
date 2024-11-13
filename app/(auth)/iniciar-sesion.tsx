@@ -6,9 +6,10 @@ import { router, useRouter } from "expo-router";
 import Images from "@/constants/Images";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import Session from "@/services/Session";
+import Cache from "@/services/Cache";
 import Http from "@/services/Http";
 
-const IniciarSesiom = () => {
+const IniciarSesion = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -23,6 +24,7 @@ const IniciarSesiom = () => {
     if (data.token) {
         await Session.setSessionData(data.token);
         await Session.setAccessToken(data.token);
+        await Cache.loadCatalogs();
         router.push("/(tabs)");
     } else {
         console.log('Error al iniciar sesión');
@@ -117,4 +119,4 @@ const IniciarSesiom = () => {
   );
 };
 
-export default IniciarSesiom;
+export default IniciarSesion;

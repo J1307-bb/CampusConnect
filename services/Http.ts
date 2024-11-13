@@ -17,11 +17,21 @@ const Http = {
 
 		let url = Http.getUrlPath(path);
 		let headersData = await Http.prepareHeaders(headers) || {};
-		let body;
+		let body: any;
 
 		if (method.toUpperCase() !== 'GET') {
-			body = data;
-			if (!sendFile) {
+			if (sendFile) {
+				headersData = await Http.prepareHeaders({
+					...headersData,
+					"Content-Type": "multipart/form-data",
+				});
+
+				body = new FormData();
+
+				Object.keys(data).forEach(key => {
+					body.append(key, data[key]);
+				});
+			} else {
 				headersData = await Http.prepareHeaders({
 					...headersData,
 					"Content-Type": "application/json",
@@ -51,6 +61,7 @@ const Http = {
 
 			return response;
 		} catch (error) {
+			console.error('Error:', error);
 			if (errors && tryCount < errors.maxTry) {
 				return Http.doRequest(path, data, options, tryCount + 1);
 			}

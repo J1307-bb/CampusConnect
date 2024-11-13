@@ -3,7 +3,7 @@ import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import Screen from "@/components/Screen";
 import { useState, useEffect } from "react";
 import { IMateria } from "@/interfaces/IInterfaces";
-import Catalogs from "@/services/Catalogs";
+import Cache from "@/services/Cache";
 import {
   FlatList,
   Text,
@@ -18,7 +18,7 @@ export default function ClasesTab() {
   const [materias, setMaterias] = useState<IMateria[]>([]);
 
   const getData = async () => {
-    const materiasData: any = await Catalogs.getMaterias();
+    const materiasData: any = await Cache.getData("materias");
 
     setMaterias(materiasData);
   }

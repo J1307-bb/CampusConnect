@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, FlatList, ScrollView, ProgressBarAndroid,
 import * as DocumentPicker from 'expo-document-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import tw from 'tailwind-react-native-classnames';
+import Session from '@/services/Session';
+import Http from '@/services/Http';
 
 interface File {
   id: number;
@@ -15,10 +17,43 @@ interface File {
 
 const FileUploader = () => {
   const [files, setFiles] = useState<File[]>([]);
-  const [selectedClass, setSelectedClass] = useState('IDYGS101');
+  const [selectedClass, setSelectedClass] = useState('Todos');
   const [isModalVisible, setModalVisible] = useState(false);
 
   const classes = ["Todos", "IDYS101", "IDYGS", "IDYGS102"];
+
+  const uploadFile = async (file: any): Promise<File> => {
+    const name = `${Date.now()}${(file.name || '')}`;
+    const [, extension] = file.mimeType.split('/');
+    const sessionData = await Session.getSessionData();
+
+    const fileData = {
+      id: Date.now(),
+      name: name,
+      file,
+      type: extension.toUpperCase() || 'UNKNOWN',
+      size: file.size || 0,
+      status: 'ready' as const,
+      uploader: `${sessionData.nombre} ${sessionData.apellidos}`
+    };
+
+    const response = await Http.post('/recursosacademicos', fileData, { sendFile: true });
+    console.log('Response:', response);
+
+    return fileData
+  };
+
+  const getFileSize = (size: number) => {
+    if (isNaN(size)) return '0 B';
+
+    if (size > 1024 * 1024) {
+      return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+    } else if (size > 1024) {
+      return `${(size / 1024).toFixed(2)} KB`;
+    } else {
+      return `${size} B`;
+    }
+  };
 
   const selectFile = async () => {
     try {
@@ -27,33 +62,19 @@ const FileUploader = () => {
         copyToCacheDirectory: true,
       });
 
-      console.log("Resultado de selección:", result);
+      console.log('Result:', result);
 
-      if (result && result.assets && result.assets.length > 0) {
+      if (result?.assets?.length) {
         const file = result.assets[0];
-        const newFile: File = {
-          id: Date.now(),
-          name: file.name || 'Sin nombre',
-          type: file.type?.split('/')[1]?.toUpperCase() || 'UNKNOWN',
-          size: file.size ? (file.size / 1024 / 1024).toFixed(1) : '0',
-          status: 'ready',
-          uploader: 'Usuario Desconocido',
-        };
+        const newFile: File = await uploadFile(file);
 
         setFiles((prevFiles) => [...prevFiles, newFile]);
-      } else if (result && result.output && result.output.length > 0) {
+      } else if (result?.output?.length) {
         const file = result.output[0];
-        const newFile: File = {
-          id: Date.now(),
-          name: file.name || 'Sin nombre',
-          type: file.type?.split('/')[1]?.toUpperCase() || 'UNKNOWN',
-          size: file.size ? (file.size / 1024 / 1024).toFixed(1) : '0',
-          status: 'ready',
-          uploader: 'Usuario Desconocido',
-        };
+        const newFile: File = await uploadFile(file);
 
         setFiles((prevFiles) => [...prevFiles, newFile]);
-      } else if (result.type === 'cancel') {
+      } else if (result.canceled) {
         Alert.alert("No seleccionaste ningún archivo");
       }
     } catch (error) {
@@ -96,7 +117,7 @@ const FileUploader = () => {
           <View>
             <Text style={tw`font-semibold text-sm`}>{item.name}</Text>
             <Text style={tw`text-gray-500 text-xs`}>{item.uploader}</Text>
-            <Text style={tw`text-gray-500 text-xs`}>{item.size} MB</Text>
+            <Text style={tw`text-gray-500 text-xs`}>{getFileSize(Number(item.size))}</Text>
           </View>
         </View>
       </View>

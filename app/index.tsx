@@ -9,7 +9,7 @@ import Loader from "@/components/Loader";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import { signOut } from "@/lib/appwrite";
 import { useEffect } from "react";
-
+import Cache from "@/services/Cache";
 function Bienvenida() {
 
   /* const { loading, isLogged } = useGlobalContext(); */
@@ -19,6 +19,12 @@ function Bienvenida() {
   /* useEffect(() => {
     signOut()
   }, []); */
+
+  Cache.getData("sessionData").then((data) => {
+    if (data.length) {
+      router.push("/(tabs)" as any);
+    }
+  });
 
     return ( 
         <SafeAreaView className="bg-white h-full">

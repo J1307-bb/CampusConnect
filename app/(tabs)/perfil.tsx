@@ -33,13 +33,11 @@ export default function PerfilTab() {
     alergias: []
   });
 
-  const handlePress = () => {
+  const handlePress = async () => {
     console.log("Cerrando sesión...");
-    signOut();
     setLoading(true);
-    setTimeout(() => {
-      router.replace("/iniciar-sesion");
-    }, 2000);
+    await signOut();
+    router.replace("/iniciar-sesion");
   };
 
   const getSessionData = async () => {

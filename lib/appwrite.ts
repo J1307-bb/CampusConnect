@@ -7,7 +7,7 @@ import {
     Query,
     Storage,
   } from "react-native-appwrite";
-import Session from "@/services/Session";
+import Cache from "@/services/Cache";
 
   export const appwriteConfig = {
         endpoint: "https://campusconnect.appwrite.io/v1",
@@ -106,9 +106,9 @@ import Session from "@/services/Session";
       // Sign Out
     export async function signOut() {
         try {
-          const session = await account.deleteSession("current");
-          await Session.removeSessionData();
-          return session;
+          // const session = await account.deleteSession("current");
+          await Cache.clearCache();
+          // return session;
         } catch (error: any) {
           throw new Error(error);
         }
