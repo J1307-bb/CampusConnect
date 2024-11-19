@@ -8,6 +8,7 @@ import { useGlobalContext } from "@/context/GlobalProvider";
 import Session from "@/services/Session";
 import Cache from "@/services/Cache";
 import Http from "@/services/Http";
+import * as Sentry from "@sentry/react-native";
 
 const IniciarSesion = () => {
   const [email, setEmail] = useState("");
@@ -19,16 +20,17 @@ const IniciarSesion = () => {
   const router = useRouter();
 
   const handleLogin = async () => {
-    const { data = {} } = await Http.post('/login', { correo: email, contrasenia: password });
+    Sentry.nativeCrash();
+    // const { data = {} } = await Http.post('/login', { correo: email, contrasenia: password });
 
-    if (data.token) {
-        await Session.setSessionData(data.token);
-        await Session.setAccessToken(data.token);
-        await Cache.loadCatalogs();
-        router.push("/(tabs)");
-    } else {
-        console.log('Error al iniciar sesión');
-    }
+    // if (data.token) {
+    //     await Session.setSessionData(data.token);
+    //     await Session.setAccessToken(data.token);
+    //     await Cache.loadCatalogs();
+    //     router.push("/(tabs)");
+    // } else {
+    //     console.log('Error al iniciar sesión');
+    // }
   };
 
   /* const handleLogin = async () => {

@@ -9,10 +9,12 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { View } from 'react-native';
 import GlobalProvider from '@/context/GlobalProvider';
 
+import * as Sentry from "@sentry/react-native";
+
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -40,4 +42,14 @@ export default function RootLayout() {
         /* </GlobalProvider> */
     /* </ThemeProvider> */
   );
+}
+
+export default function initLogger() {
+  Sentry.init({
+    dsn: "https://446ddb0a6e6c2cb534f45d5e129e17fb@o4508326779092992.ingest.us.sentry.io/4508326780731392",
+    tracesSampleRate: 1.0,
+    profilesSampleRate: 1.0,
+  });
+
+  Sentry.wrap(RootLayout);
 }
