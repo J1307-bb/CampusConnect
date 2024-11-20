@@ -20,17 +20,24 @@ const IniciarSesion = () => {
   const router = useRouter();
 
   const handleLogin = async () => {
-    Sentry.nativeCrash();
-    // const { data = {} } = await Http.post('/login', { correo: email, contrasenia: password });
+    Sentry.startSpan({ name: "Iniciar sesión" }, async () => {
+      try {
+        const { data = {} } = await Http.post('/login', { correo: email, contrasenia: password });
 
-    // if (data.token) {
-    //     await Session.setSessionData(data.token);
-    //     await Session.setAccessToken(data.token);
-    //     await Cache.loadCatalogs();
-    //     router.push("/(tabs)");
-    // } else {
-    //     console.log('Error al iniciar sesión');
-    // }
+        if (data.token) {
+          Sentry.startSpan({ name: "Cargar información" }, async () => {
+            await Session.setSessionData(data.token);
+            await Session.setAccessToken(data.token);
+            await Cache.loadCatalogs();
+            router.push("/(tabs)");
+          })
+        } else {
+            Sentry.captureMessage("Error al iniciar sesión: Inicio de sesión fallido o no autorizado");
+        }
+      } catch (error) {
+          Sentry.captureException(error);
+      }
+    });
   };
 
   /* const handleLogin = async () => {

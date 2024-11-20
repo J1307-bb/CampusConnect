@@ -14,6 +14,13 @@ import * as Sentry from "@sentry/react-native";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
+Sentry.init({
+  dsn: "https://446ddb0a6e6c2cb534f45d5e129e17fb@o4508326779092992.ingest.us.sentry.io/4508326780731392",
+  tracesSampleRate: 1.0,
+  profilesSampleRate: 1.0,
+  parentSpanIsAlwaysRootSpan: false,
+});
+
 function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
@@ -32,24 +39,19 @@ function RootLayout() {
 
   return (
     /* <ThemeProvider value={colorScheme === 'dark' ? DarkThreeme : DefaultTheme}> */
-        /* <GlobalProvider> */
+    /* <GlobalProvider> */
+    // es necesario envolver la aplicación en un componente para Sentry
+    <>
           <Stack>
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="(profesor)" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="index" options={{ headerShown: false }} />
           </Stack>
-        /* </GlobalProvider> */
+    </>
+    /* </GlobalProvider> */
     /* </ThemeProvider> */
   );
 }
 
-export default function initLogger() {
-  Sentry.init({
-    dsn: "https://446ddb0a6e6c2cb534f45d5e129e17fb@o4508326779092992.ingest.us.sentry.io/4508326780731392",
-    tracesSampleRate: 1.0,
-    profilesSampleRate: 1.0,
-  });
-
-  Sentry.wrap(RootLayout);
-}
+export default Sentry.wrap(RootLayout)
