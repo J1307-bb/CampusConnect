@@ -9,6 +9,11 @@ import Catalogs from "@/services/Catalogs";
 import Cache from "@/services/Cache";
 import Utils from "@/services/Utils";
 import { IMateria, IAviso } from "@/interfaces/IInterfaces";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { styled } from "nativewind";
+
+const CategoryCard = styled(View);
+const NoticeCard = styled(View);
 
 export default function InicioTab() {
   const [currentSection, setCurrentSection] = useState("Avisos");
@@ -52,10 +57,12 @@ export default function InicioTab() {
         {/* Saludo */}
         <View className="px-4 py-4">
           <View className="flex-row justify-between items-center">
-            <Text className="text-lg font-bold">
+            <Text className="text-2xl font-bold text-gray-800">
               Hola, <Text className="text-yellow-500">{sessionData.nombre}</Text>
             </Text>
-            <TabBarIcon name="notifications" size={20} color="purple" />
+            <TouchableOpacity>
+              <TabBarIcon name="notifications" size={24} color="orange" />
+            </TouchableOpacity>
           </View>
         </View>
         {/* Categorías */}
@@ -79,35 +86,71 @@ export default function InicioTab() {
           ))}
         </ScrollView>
         {/* Clases de Hoy */}
-        <View className="px-6 mb-6">
+        <View className="px-6 mb-7">
           <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-2xl font-bold text-gray-800">Clases de Hoy:</Text>
+            <Text className="text-2xl font-bold text-gray-800">
+              Clases de Hoy:
+            </Text>
             <TouchableOpacity
               className="flex-row items-center"
               onPress={() => router.push("/horario")}
             >
-              <Text className="text-orange-500 font-semibold mr-1">Ver Horario</Text>
+              <Text className="text-orange-500 font-semibold mr-1">
+                Ver Horario
+              </Text>
               <TabBarIcon name="chevron-forward" size={20} color="orange" />
             </TouchableOpacity>
           </View>
           {materias.filter((item) => item.dia === Utils.getToday().toLowerCase()).map(({ id, materia, horario, aula, profesor }) => (
-              <View className="bg-[#ede6db] p-4 mt-4 rounded-lg border border-gray-400" key={id}>
+              <View className="bg-white p-5 rounded-2xl shadow-md border border-gray-200" key={id}>
                 <Text className="text-lg font-semibold">{materia}</Text>
                 <View className="flex-row items-center mt-1">
-                  <Text className="text-gray-500">{horario}</Text>
-                  <Text className="text-gray-500 ml-4">{aula}</Text>
+                  <Icon name="clock-outline" size={16} color="gray" />
+                  <Text className="text-gray-500 ml-2">{horario}</Text>
+                  <Icon
+                    name="map-marker-outline"
+                    size={16}
+                    color="gray"
+                    className="ml-4"
+                  />
+                  <Text className="text-gray-500 ml-2">{aula}</Text>
                 </View>
                 <Text className="text-gray-700 mt-1">{profesor.nombre} {profesor.apellidos}</Text>
               </View>
           ))}
         </View>
 
+        {/* Mapa Interactivo */}
+        <View className="px-6 mb-6">
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-2xl font-bold text-gray-800">
+              Mapa Interactivo:
+            </Text>
+          </View>
+          <View >
+          <TouchableOpacity
+            onPress={() => router.push("/mapa" as any)}
+            className="bg-white p-5 rounded-2xl shadow-md border border-yellow-500/50 flex-row items-center"
+          >
+            <Icon name="map-marker" size={30} color="orange" />
+            <View >
+              <Text className="text-lg font-semibold text-gray-800">Mapa Interactivo del Campus</Text>
+              <Text className="text-gray-600 mt-1">Explora el campus con nuestro mapa interactivo y encuentra fácilmente los edificios y salones.</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+        </View>
+
+
+
         {/* Noticias y Eventos */}
         <View className="px-6">
           <View className="flex-row mb-4">
             <TouchableOpacity
               className={`border-b-2  ${
-                currentSection === "Avisos" ? "border-orange-500" : "border-transparent"
+                currentSection === "Avisos"
+                  ? "border-orange-500"
+                  : "border-transparent"
               }`}
               onPress={() => handleSectionChange("Avisos")}
             >
@@ -124,7 +167,9 @@ export default function InicioTab() {
 
             <TouchableOpacity
               className={`ml-6 border-b-2  ${
-                currentSection === "Eventos" ? "border-orange-500" : "border-transparent"
+                currentSection === "Eventos"
+                  ? "border-orange-500"
+                  : "border-transparent"
               }`}
               onPress={() => handleSectionChange("Eventos")}
             >
@@ -143,17 +188,17 @@ export default function InicioTab() {
           {currentSection === "Avisos" && (
             <>
               {avisos.filter((item) => item.tipo === 1).map(({ id, titulo, descripcion, fechaPublicacion }) => (
-                <View className="bg-white p-4 mb-4 rounded-lg border border-orange-400 shadow-md" key={id}>
-                  <Text className="text-md font-semibold">
+                <NoticeCard className="bg-white p-5 mb-4 rounded-2xl shadow-md border border-orange-400">
+                  <Text className="text-lg font-semibold text-gray-800">
                     {titulo}
                   </Text>
-                  <Text className="text-gray-600">
+                  <Text className="text-gray-600 mt-1">
                     {descripcion}
                   </Text>
-                  <Text className="text-sm text-gray-400 mt-1">
+                  <Text className="text-sm text-gray-400 mt-2">
                     {Utils.formatFirebaseDate(fechaPublicacion)}
                   </Text>
-                </View>
+                </NoticeCard>
               ))}
             </>
           )}
@@ -161,17 +206,17 @@ export default function InicioTab() {
           {currentSection === "Eventos" && (
             <>
               {avisos.filter((item) => item.tipo === 2).map(({ id, titulo, descripcion, fechaPublicacion }) => (
-                <View className="bg-white p-4 mb-4 rounded-lg border border-orange-400 shadow-md" key={id}>
-                  <Text className="text-md font-semibold">
+                <NoticeCard className="bg-white p-5 mb-4 rounded-2xl shadow-md border border-orange-400">
+                  <Text className="text-lg font-semibold text-gray-800">
                     {titulo}
                   </Text>
-                  <Text className="text-gray-600">
+                  <Text className="text-gray-600 mt-1">
                     {descripcion}
                   </Text>
-                  <Text className="text-sm text-gray-400 mt-1">
+                  <Text className="text-sm text-gray-400 mt-2">
                     {Utils.formatFirebaseDate(fechaPublicacion)}
                   </Text>
-                </View>
+                </NoticeCard>
               ))}
             </>
           )}

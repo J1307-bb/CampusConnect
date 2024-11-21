@@ -1,13 +1,17 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect } from "react";
+import "react-native-reanimated";
 
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { View } from 'react-native';
-import GlobalProvider from '@/context/GlobalProvider';
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { View } from "react-native";
+import GlobalProvider from "@/context/GlobalProvider";
 
 import * as Sentry from "@sentry/react-native";
 
@@ -24,7 +28,7 @@ Sentry.init({
 function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
 
   useEffect(() => {
@@ -47,6 +51,14 @@ function RootLayout() {
             <Stack.Screen name="(profesor)" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="mapa"
+              options={{
+                headerShown: true,
+                headerBackTitle: "Atrás",
+                title: "Mapa del Campus",
+              }}
+            />
           </Stack>
     </>
     /* </GlobalProvider> */
