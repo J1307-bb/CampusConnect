@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,6 +11,9 @@ import {
 import tw from "tailwind-react-native-classnames";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
+import Catalogs from "@/services/Catalogs";
+import Cache from "@/services/Cache";
+
 const EncuestaDinamica = () => {
   const [preguntas, setPreguntas] = useState([
     {
@@ -22,11 +25,30 @@ const EncuestaDinamica = () => {
       ],
     },
   ]);
-  const [destinatario, setDestinatario] = useState("Todos");
+  const [grupos, setGrupos] = useState<any>([{
+    nombre: '',
+    id: '',
+  }]);
+  const [destinatario, setDestinatario] = useState("todos");
+  const [titulo, setTitulo] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [encuestas, setEncuestas] = useState<any>([]);
 
-  const destinatarios = ["Todos", "IDYS-101", "IDYGS-102", "IDYGS-103"];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [gruposData] = await Promise.all([
+          await Cache.getData("gruposMaterias"),
+        ]);
+
+        setGrupos([{ nombre: 'Todos', id: 'todos'}, ...gruposData]);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const agregarPregunta = () => {
     const nuevaPregunta = {
@@ -117,6 +139,10 @@ const EncuestaDinamica = () => {
         ],
       },
     ]);
+
+    Catalogs.createForm({
+      titulo, preguntas, to: destinatario
+    })
   };
 
   return (
@@ -131,7 +157,7 @@ const EncuestaDinamica = () => {
             style={tw`bg-blue-100 rounded-full px-4 py-2 flex-row items-center`}
           >
             <Text style={tw`text-blue-800 font-semibold mr-2`}>
-              {destinatario}
+              {grupos.find((d: any) => d.id === destinatario)?.nombre}
             </Text>
             <Icon name="chevron-down" size={20} color="blue" />
           </TouchableOpacity>
@@ -158,13 +184,13 @@ const EncuestaDinamica = () => {
               <Text style={tw`text-lg font-bold mb-4 text-gray-900`}>
                 Seleccionar destinatario
               </Text>
-              {destinatarios.map((opcion) => (
+              {grupos.map((grupo: any) => (
                 <TouchableOpacity
-                  key={opcion}
-                  onPress={() => seleccionarDestinatario(opcion)}
+                  key={grupo.nombre}
+                  onPress={() => seleccionarDestinatario(grupo.id)}
                   style={tw`p-2 border-b border-gray-200`}
                 >
-                  <Text style={tw`text-gray-700`}>{opcion}</Text>
+                  <Text style={tw`text-gray-700`}>{grupo.nombre}</Text>
                 </TouchableOpacity>
               ))}
               <TouchableOpacity
@@ -176,6 +202,8 @@ const EncuestaDinamica = () => {
             </View>
           </View>
         </Modal>
+
+        <TextInput style={tw`border border-gray-300 rounded-lg p-2 mb-4`} placeholder="Título" value={titulo} onChangeText={setTitulo} />
 
         {/* Formulario de Preguntas */}
         {preguntas.map((pregunta) => (

@@ -8,10 +8,27 @@ import Images from "@/constants/Images";
 import Loader from "@/components/Loader";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import { signOut } from "@/lib/appwrite";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Cache from "@/services/Cache";
 function Bienvenida() {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { esProfesor, id } = await Cache.getData("sessionData") || {};
 
+        if (!id) return;
+
+        if (esProfesor) {
+          router.push("/inicio" as any);
+        } else {
+          router.push("/(tabs)" as any);
+        }
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      }
+    };
+    fetchData();
+  }, []);
   /* const { loading, isLogged } = useGlobalContext(); */
 
   /* if (!loading && isLogged) return <Redirect href='/(tabs)' />; */
@@ -19,12 +36,6 @@ function Bienvenida() {
   /* useEffect(() => {
     signOut()
   }, []); */
-
-  Cache.getData("sessionData").then((data) => {
-    if (data.length) {
-      router.push("/(tabs)" as any);
-    }
-  });
 
     return ( 
         <SafeAreaView className="bg-white h-full">

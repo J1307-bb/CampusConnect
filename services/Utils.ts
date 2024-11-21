@@ -1,3 +1,5 @@
+import Session from './Session';
+
 const Utils = {
     objectToQueryString: (obj: any) => {
         const str: any = [];
@@ -49,12 +51,24 @@ const Utils = {
         const rgnx = /^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/g;
         return rgnx.test(email)
     },
-    formatDate: (date: string, opts?:any) => {
+    formatDate: (date: any, opts?: any) => {
+        const { format = 'dd/mm/yyyy' } = opts || {};
+
+        if (!date) return '';
+
         const d = new Date(date);
         const day = String(d.getDate()).padStart(2, '0');
         const month = String(d.getMonth() + 1).padStart(2, '0');
         const year = d.getFullYear();
-        return `${day}/${month}/${year}`;
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+
+        return format
+            .replace('dd', day)
+            .replace('mm', month)
+            .replace('yyyy', year)
+            .replace('hh', hours)
+            .replace('mm', minutes);
     },
     formatFirebaseDate: (date: any) => {
         const { seconds } = date || {};
@@ -69,6 +83,32 @@ const Utils = {
         const year = d.getFullYear();
 
         return `${day}/${month}/${year}`;
+    },
+    getRemainingTime: (date: any) => {
+        const { seconds } = date || {};
+        const now = new Date().getTime() / 1000;
+
+        if (!seconds) {
+            return '';
+        }
+
+        const due = seconds;
+        const diff = due - now;
+        const minutes = Math.floor(diff / 60);
+
+        return minutes;
+    },
+    getFormatRemainingTime: (date: any) => {
+        const minutes = Number(Utils.getRemainingTime(date));
+
+        if (minutes <= 60) return `${minutes} min`;
+
+        const hours = Math.floor(minutes / 60);
+        if (minutes > 60 && minutes < 1440) return `${hours}h`;
+
+        const days = Math.floor(hours / 24);
+        const remainingHours = hours % 24;
+        if (minutes >= 1440) return `${days}d ${remainingHours}h`;
     },
     getFormData: (form: any) => {
         let data: any = {};

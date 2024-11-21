@@ -9,6 +9,7 @@ import Session from "@/services/Session";
 import Cache from "@/services/Cache";
 import Http from "@/services/Http";
 import * as Sentry from "@sentry/react-native";
+import NotificationService from "@/services/Notifications";
 
 const IniciarSesion = () => {
   const [email, setEmail] = useState("");
@@ -19,6 +20,17 @@ const IniciarSesion = () => {
 
   const router = useRouter();
 
+
+  const navigateToDashboard = async () => {
+    const { esProfesor } = await Session.getSessionData();
+
+    if (esProfesor) {
+      router.push("/inicio" as any);
+    } else {
+      router.push("/(tabs)" as any);
+    }
+  };
+
   const handleLogin = async () => {
     Sentry.startSpan({ name: "Iniciar sesión" }, async () => {
       try {
@@ -28,9 +40,14 @@ const IniciarSesion = () => {
           Sentry.startSpan({ name: "Cargar información" }, async () => {
             await Session.setSessionData(data.token);
             await Session.setAccessToken(data.token);
+          });
+
+          Sentry.startSpan({ name: "Cargar catálogos" }, async () => {
             await Cache.loadCatalogs();
-            router.push("/(tabs)");
-          })
+          });
+
+          await NotificationService.registerDevice();
+          await navigateToDashboard();
         } else {
             Sentry.captureMessage("Error al iniciar sesión: Inicio de sesión fallido o no autorizado");
         }
