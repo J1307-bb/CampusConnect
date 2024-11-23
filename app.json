@@ -14,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "package": "com.idygs101.campusconnect"
+      "package": "com.idygs101.campusconnect",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "bundleIndentifier": "com.idygs101.campusconnect",
+      "bundleIdentifier": "com.idygs101.campusconnect"
     },
     "android": {
       "adaptiveIcon": {

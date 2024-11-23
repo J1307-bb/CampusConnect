@@ -22,3 +22,4 @@ expo-env.d.ts
 .vscode/
 google-services.json
 package-lock.json
+GoogleService-Info.plist

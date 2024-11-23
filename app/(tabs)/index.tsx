@@ -71,8 +71,8 @@ export default function InicioTab() {
           showsHorizontalScrollIndicator={false}
           className="px-6 py-2 mb-6"
         >
-          {materias.map(({ materia, id, imagen }) => (
-            <TouchableOpacity key={id} className="mr-4">
+          {materias.map(({ materia, id, imagen }, index) => (
+            <TouchableOpacity key={index} className="mr-4">
               <View className="w-24 h-36 bg-gray-200 rounded-lg overflow-hidden">
                 <Image
                   source={{ uri: imagen || "https://via.placeholder.com/100" }}
@@ -101,8 +101,8 @@ export default function InicioTab() {
               <TabBarIcon name="chevron-forward" size={20} color="orange" />
             </TouchableOpacity>
           </View>
-          {materias.filter((item) => item.dia === Utils.getToday().toLowerCase()).map(({ id, materia, horario, aula, profesor }) => (
-              <View className="bg-white p-5 rounded-2xl shadow-md border border-gray-200" key={id}>
+          {materias.filter((item) => item.dia === Utils.getToday().toLowerCase()).map(({ id, materia, horario, aula, profesor }, index) => (
+              <View className="bg-white p-5 rounded-2xl shadow-md border border-gray-200" key={index}>
                 <Text className="text-lg font-semibold">{materia}</Text>
                 <View className="flex-row items-center mt-1">
                   <Icon name="clock-outline" size={16} color="gray" />

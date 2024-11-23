@@ -167,7 +167,7 @@ const HomeProfesor = () => {
           <View className="mb-4">
             <Text className="text-lg font-semibold mb-4">Materias</Text>
             <ScrollView horizontal className="flex-row">
-              {materias.map(({materia, grupo, tarea}, index) => (
+              {materias.map(({ materia, grupo, tarea = {} }, index) => (
                 <TouchableOpacity
                   key={index}
                   className="rounded-lg shadow-lg p-4 mr-4 bg-white w-50"
@@ -179,7 +179,7 @@ const HomeProfesor = () => {
                     Grupo: {grupo.nombre}
                   </Text>
                   <Text className="text-gray-500 text-xs">
-                    Última tarea: {tarea.titulo}
+                    Última tarea: {tarea.titulo || 'Sin tareas'}
                   </Text>
                   <Text className="text-gray-500 text-xs">
                     Fecha de entrega: {Utils.getFormatRemainingTime(tarea.fechaVencimiento)}
