@@ -20,18 +20,18 @@ const ScheduleScreen = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [materias, setMaterias] = useState<IMateria[]>([]);
   const [materiasFiltered, setMateriasFiltered] = useState<IMateria[]>([]);
-  useEffect(() => {
-    const today = new Date().getDay();
-    const initialDay = today === 0 || today === 6 ? "lunes" : days[today - 1].key;
-    setSelectedDay(initialDay);
-    setMateriasFiltered(materias.filter((item) => item.dia === initialDay));
-  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const materiasData = await Cache.getData('materias');
         setMaterias(materiasData);
+
+        const today = new Date().getDay();
+        const initialDay = today === 0 || today === 6 ? "lunes" : days[today - 1].key;
+
+        setSelectedDay(initialDay);
+        setMateriasFiltered(materiasData.filter((item: any) => item.dia === initialDay));
       } catch (error) {
         console.error("Error fetching data: ", error);
       }

@@ -111,7 +111,7 @@ const HomeProfesor = () => {
         <ScrollView className="mx-6 h-full mt-2">
           {/* Encabezado */}
           <View className="mb-6">
-            <Text className="text-2xl font-semibold">Hola, {sessionData.apellidos}</Text>
+            <Text className="text-2xl font-semibold">Hola, {sessionData.nombre}</Text>
             <Text className="text-lg text-gray-500">Bienvenido</Text>
           </View>
 

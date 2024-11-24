@@ -38,7 +38,6 @@ const FileUploader = () => {
     };
 
     const response = await Http.post('/recursosacademicos', fileData, { sendFile: true });
-    console.log('Response:', response);
 
     return fileData
   };
