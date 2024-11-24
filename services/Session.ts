@@ -25,10 +25,8 @@ const Session = {
         return sessionData ? JSON.parse(sessionData) : {};
     },
     removeSessionData: async () => {
-        console.log('Removing session data');
         await AsyncStorage.removeItem('sessionData');
         await AsyncStorage.removeItem('accessToken');
-        console.log('Session data removed');
     },
 };
 

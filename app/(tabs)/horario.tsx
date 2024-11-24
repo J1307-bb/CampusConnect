@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import { IMateria } from "@/interfaces/IInterfaces";
 import Cache from "@/services/Cache";
+import NotificationService from "@/services/Notifications";
 
 const ScheduleScreen = () => {
   const days = [
@@ -22,6 +23,7 @@ const ScheduleScreen = () => {
   const [materiasFiltered, setMateriasFiltered] = useState<IMateria[]>([]);
 
   useEffect(() => {
+    NotificationService.setNotificationListener();
     const fetchData = async () => {
       try {
         const materiasData = await Cache.getData('materias');

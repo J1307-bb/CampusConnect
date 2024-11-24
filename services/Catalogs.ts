@@ -2,6 +2,7 @@ import Http from "./Http";
 import Session from "./Session";
 import Utils from "./Utils";
 import Notifications from "./Notifications";
+import Cache from "./Cache";
 
 const Catalogs = {
     getCatalog: async (catalog: string, params?: any) => {
@@ -23,66 +24,103 @@ const Catalogs = {
         return response.data;
     },
     getMaterias: async () => {
-        return await Catalogs.getCatalog('/clases');
+        return await Catalogs.getCatalog('/clases/recibidas');
     },
     getAvisos: async () => {
         return await Catalogs.getCatalog('/avisos');
     },
-    getCalificaciones: async () => {
-        return await Catalogs.getCatalog('/calificaciones', { idEstudiante: 'id' });
+    getCalificacionesRecibidas: async () => {
+        return await Catalogs.getCatalog('/calificaciones/recibidas');
     },
     getGrupos: async () => {
         return await Catalogs.getCatalog('/grupos');
     },
     getMateriasProfesor: async () => {
-        console.log('getMateriasProfesor');
-        return await Catalogs.getCatalog('/clases', { idProfesor: 'id' });
+        return await Catalogs.getCatalog('/clases/asignadas');
     },
-    createTask: async (opts: any) => {
-        const { titulo, descripcion, fechaVencimiento, to } = opts;
+    getGruposAsignados: async () => {
+        return await Catalogs.getCatalog('/grupos/asignados');
+    },
+    getEstudiantesAsignados: async () => {
+        return await Catalogs.getCatalog('/estudiantes/asignados');
+    },
+    getEstudiantesGrupo: async (idGrupo: string) => {
+        const estudiantes = await Cache.getData('estudiantesAsignados');
+        return estudiantes.filter((estudiante: any) => estudiante.idGrupo === idGrupo);
+    },
+    getTareasCreadas: async () => {
+        return await Catalogs.getCatalog('/tareas/creadas');
+    },
+    getEncuestasCreadas: async () => {
+        return await Catalogs.getCatalog('/encuestas/creadas');
+    },
+    getAvisosCreados: async () => {
+        return await Catalogs.getCatalog('/avisos/creadas');
+    },
+    postTareas: async (opts: any) => {
+        const { titulo, descripcion, idMateria, fechaVencimiento, to, idProfesor } = opts;
 
+        //TODO: crear select de materias para asignar tarea en el dashboard de profesores
         try {
-            await Http.post('/tareas', { titulo, descripcion, fechaVencimiento, to });
+            const { data } = await Http.post('/tareas', { titulo, descripcion, fechaVencimiento, to, idMateria, idProfesor });
+            await Catalogs.updateLastTaskAssigned(data.id, idMateria);
         } catch (error) {
             console.error('Error creating task: ', error);
         }
 
         const message = {
-            title: 'Nueva tarea',
-            body: 'Tienes una nueva tarea pendiente',
+            title: 'Campus Connect',
+            body: 'Tienes una nueva tarea pendiente: {titulo}',
+            data: {
+                titulo,
+                url: '/(tabs)'
+            }
         }
 
-        Notifications.sendNofication({ to, message });
+        await Notifications.sendNofication({ to, message });
     },
-    createNotice: async (opts: any) => {
-        const { titulo, descripcion, to } = opts;
+    updateLastTaskAssigned: async (idTarea: string, idMateria: string) => {
+        if(!idMateria) return;
+
+        await Http.put(`/materias/${idMateria}`, { idTarea });
+    },
+    postAviso: async (opts: any) => {
+        const { titulo, descripcion, to, idProfesor } = opts;
         try {
-            await Http.post('/avisos', { titulo, descripcion, to });
+            await Http.post('/avisos', { titulo, descripcion, to, idProfesor });
         } catch (error) {
             console.error('Error creating notice: ', error);
         }
 
         const message = {
-            title: 'Nuevo aviso',
-            body: 'Tienes un nuevo aviso pendiente',
+            title: 'Campus Connect',
+            body: 'Tienes un nuevo aviso pendiente: {titulo}',
+            data: {
+                titulo,
+                url: '/(tabs)'
+            }
         }
-        Notifications.sendNofication({ to, message });
+        await Notifications.sendNofication({ to, message });
     },
-    createForm: async (opts: any) => {
-        const { titulo, preguntas, to } = opts;
+    postEncuesta: async (opts: any) => {
+        const { titulo, preguntas, to, idProfesor } = opts;
 
         try {
-            await Http.post('/encuestas', { titulo, preguntas, to });
+            await Http.post('/encuestas', { titulo, preguntas, to, idProfesor });
         } catch (error) {
             console.error('Error creating form: ', error);
         }
 
         const message = {
-            title: 'Nueva encuesta',
-            body: 'Tienes una nueva encuesta pendiente',
+            title: 'Campus Connect',
+            body: 'Tienes una nueva encuesta pendiente: {titulo}',
+            data: {
+                titulo,
+                url: '/calificacion'
+            }
         };
 
-        Notifications.sendNofication({ to, message });
+        await Notifications.sendNofication({ to, message });
     },
 };
 

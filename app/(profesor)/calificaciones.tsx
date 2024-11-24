@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,51 +12,51 @@ import {
 import tw from "tailwind-react-native-classnames";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
-interface Student {
-  id: number;
-  name: string;
-  grade: string;
-  matricula: string;
-}
+import NotificationService from "@/services/Notifications";
+import Cache from "@/services/Cache";
 
 const GradesView = () => {
   const [selectedClass, setSelectedClass] = useState("IDYGS-101");
   const [selectedUnit, setSelectedUnit] = useState("Unidad 1");
-  const [isClassModalVisible, setClassModalVisible] = useState(false);
-  const [isUnitModalVisible, setUnitModalVisible] = useState(false);
-  const [isGradeModalVisible, setGradeModalVisible] = useState(false);
-  const [students, setStudents] = useState<Student[]>([
-    { id: 1, name: "Abril Adame Guzmán", matricula: "21393102", grade: "" },
-    {
-      id: 2,
-      name: "Erick Yahir Cauich Chan",
-      matricula: "21839381",
-      grade: "",
-    },
-    {
-      id: 3,
-      name: "Edgar Jair Badillo Bañuelos",
-      matricula: "20393142",
-      grade: "",
-    },
-    { id: 4, name: "Hector Omar", matricula: "21393102", grade: "" },
-    { id: 5, name: "José Luis Pérez", matricula: "21393102", grade: "" },
-    { id: 6, name: "María Fernanda García", matricula: "21393102", grade: "" },
-    { id: 7, name: "Juan Pérez", matricula: "21393102", grade: "" },
-  ]);
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [classModalVisible, setClassModalVisible] = useState(false);
+  const [unitModalVisible, setUnitModalVisible] = useState(false);
+  const [gradeModalVisible, setGradeModalVisible] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState({ nombre: "", id: "" });
   const [newGrade, setNewGrade] = useState("");
 
-  const classes = ["IDYGS-101", "IDYGS-102", "IDYGS-103", "Todos"];
+  const [grupos, setGrupos] = useState([{ nombre: '', id: '' }]);
+  const [estudiantes, setEstudiantes] = useState([{ nombre: '', id: '' }]);
+  const [materias, setMaterias] = useState([{ nombre: '', id: '' }]);
+
   const units = ["Unidad 1", "Unidad 2", "Unidad 3"];
+
+  useEffect(() => {
+    NotificationService.setNotificationListener();
+
+    const fetchData = async () => {
+      try {
+        const [gruposData, estudiantesData, materiasData] = await Promise.all([
+          await Cache.getData("gruposAsignados"),
+          await Cache.getData("estudiantesAsignados"),
+          await Cache.getData("materiasAsignadas"),
+        ]);
+
+        setGrupos(gruposData);
+        setEstudiantes(estudiantesData);
+        setMaterias(materiasData);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleGradeSubmit = () => {
     if (selectedStudent) {
-      setStudents((prevStudents) =>
+      setEstudiantes((prevStudents) =>
         prevStudents.map((student) =>
-          student.id === selectedStudent.id
-            ? { ...student, grade: newGrade }
-            : student
+          student.id === selectedStudent.id ? { ...student, calificacion: newGrade } : student
         )
       );
       setGradeModalVisible(false);
@@ -64,7 +64,12 @@ const GradesView = () => {
     }
   };
 
-  const renderStudentItem = ({ item }: { item: Student }) => (
+  const selectGroup = async (idGroup: string) => {
+    console.log(idGroup);
+    setClassModalVisible(false);
+  };
+
+  const renderStudentItem = ({ item }: any) => (
     <TouchableOpacity
       className={`flex-row justify-between items-center bg-[#EDF1EF] p-4 mb-2 rounded-lg `}
       onPress={() => {
@@ -73,10 +78,10 @@ const GradesView = () => {
       }}
     >
       <View>
-        <Text style={tw`text-gray-800 font-semibold`}>{item.name}</Text>
+        <Text style={tw`text-gray-800 font-semibold`}>{item.nombre}</Text>
         <Text style={tw`text-gray-500`}>{item.matricula}</Text>
       </View>
-      <Text style={tw`text-gray-500`}>{item.grade ? `${item.grade} / 100` : "Sin calificación" }</Text>
+      <Text style={tw`text-gray-500`}>{item.calificacion ? `${item.calificacion} / 100` : "Sin calificación" }</Text>
     </TouchableOpacity>
   );
 
@@ -116,8 +121,8 @@ const GradesView = () => {
         {/* Listado de Alumnos */}
         <Text style={tw`text-xl font-bold mb-4 text-gray-900`}>Alumnos:</Text>
         <FlatList
-          data={students}
-          keyExtractor={(item) => item.id.toString()}
+          data={estudiantes}
+          keyExtractor={(item) => item.id}
           renderItem={renderStudentItem}
           contentContainerStyle={tw`w-full h-full`}
         />
@@ -125,25 +130,22 @@ const GradesView = () => {
 
       {/* Modal Seleccionar Clase */}
       <Modal
-        visible={isClassModalVisible}
+        visible={classModalVisible}
         transparent={true}
         animationType="slide"
       >
         <View style={tw`flex-1 justify-center bg-black bg-opacity-50`}>
           <View style={tw`bg-white mx-6 p-4 rounded-lg`}>
             <Text style={tw`text-lg font-semibold mb-4 text-gray-900`}>
-              Selecciona una clase
+              Selecciona un grupo
             </Text>
-            {classes.map((cls, index) => (
+            {grupos.map(({ id, nombre}) => (
               <TouchableOpacity
-                key={index}
-                onPress={() => {
-                  setSelectedClass(cls);
-                  setClassModalVisible(false);
-                }}
+                key={id}
+                onPress={() => { selectGroup(id); }}
                 style={tw`py-3 border-b border-gray-300`}
               >
-                <Text style={tw`text-gray-800`}>{cls}</Text>
+                <Text style={tw`text-gray-800`}>{nombre}</Text>
               </TouchableOpacity>
             ))}
             <TouchableOpacity
@@ -158,7 +160,7 @@ const GradesView = () => {
 
       {/* Modal Seleccionar Unidad */}
       <Modal
-        visible={isUnitModalVisible}
+        visible={unitModalVisible}
         transparent={true}
         animationType="slide"
       >
@@ -191,14 +193,14 @@ const GradesView = () => {
 
       {/* Modal Asignar Calificación */}
       <Modal
-        visible={isGradeModalVisible}
+        visible={gradeModalVisible}
         transparent={true}
         animationType="slide"
       >
         <View style={tw`flex-1 justify-center bg-black bg-opacity-50`}>
           <View style={tw`bg-white mx-6 p-4 rounded-lg`}>
             <Text style={tw`text-lg font-semibold mb-4 text-gray-900`}>
-              Asignar calificación a {selectedStudent?.name}
+              Asignar calificación a {selectedStudent?.nombre}
             </Text>
             <TextInput
               style={tw`border border-gray-300 p-3 rounded-lg mb-4`}

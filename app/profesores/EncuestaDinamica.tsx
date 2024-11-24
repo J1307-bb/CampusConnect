@@ -13,8 +13,13 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 import Catalogs from "@/services/Catalogs";
 import Cache from "@/services/Cache";
+import NotificationService from "@/services/Notifications";
 
 const EncuestaDinamica = () => {
+  const [destinatario, setDestinatario] = useState("todos");
+  const [titulo, setTitulo] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [encuestas, setEncuestas] = useState<any>([]);
   const [preguntas, setPreguntas] = useState([
     {
       id: 1,
@@ -29,19 +34,18 @@ const EncuestaDinamica = () => {
     nombre: '',
     id: '',
   }]);
-  const [destinatario, setDestinatario] = useState("todos");
-  const [titulo, setTitulo] = useState("");
-  const [modalVisible, setModalVisible] = useState(false);
-  const [encuestas, setEncuestas] = useState<any>([]);
 
   useEffect(() => {
+    NotificationService.setNotificationListener();
     const fetchData = async () => {
       try {
-        const [gruposData] = await Promise.all([
-          await Cache.getData("gruposMaterias"),
+        const [gruposData, encuestasData] = await Promise.all([
+          await Cache.getData("gruposAsignados"),
+          await Catalogs.getEncuestasCreadas(),
         ]);
 
-        setGrupos([{ nombre: 'Todos', id: 'todos'}, ...gruposData]);
+        setGrupos([{ nombre: 'Todos', id: 'todos' }, ...gruposData]);
+        setEncuestas(encuestasData);
       } catch (error) {
         console.error("Error fetching data: ", error);
       }
@@ -140,7 +144,7 @@ const EncuestaDinamica = () => {
       },
     ]);
 
-    Catalogs.createForm({
+    Catalogs.postEncuesta({
       titulo, preguntas, to: destinatario
     })
   };

@@ -34,6 +34,7 @@ const IniciarSesion = () => {
   const handleLogin = async () => {
     Sentry.startSpan({ name: "Iniciar sesión" }, async () => {
       try {
+        console.log("Iniciando sesión...");
         const { data = {} } = await Http.post('/login', { correo: email, contrasenia: password });
 
         if (data.token) {
@@ -43,7 +44,7 @@ const IniciarSesion = () => {
           });
 
           Sentry.startSpan({ name: "Cargar catálogos" }, async () => {
-            await Cache.loadCatalogs();
+            await Cache.loadRequiredCatalogs();
           });
 
           await NotificationService.registerDevice();

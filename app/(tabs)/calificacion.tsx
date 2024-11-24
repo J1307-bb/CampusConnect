@@ -1,14 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SegmentedButtons, useTheme } from "react-native-paper";
 import CalificacionesView from "@/screens/CalificacionesView";
 import EncuestasView from "@/screens/EncuestasView";
+import NotificationService from "@/services/Notifications";
 
 export default function CalificacionTab() {
   const [isUnidadModalVisible, setIsUnidadModalVisible] = useState(false);
   const [currentSection, setCurrentSection] = useState("Calificaciones");
   const theme = useTheme();
+
+  useEffect(() => {
+    NotificationService.setNotificationListener();
+  }, []);
 
   const toggleTurnoModal = () => {
     setIsUnidadModalVisible(!isUnidadModalVisible);

@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/react-native';
+
 import Utils from './Utils';
 import Session from './Session';
 
@@ -46,12 +48,13 @@ const Http = {
 		return { headers: headersData, url, body };
 	},
 	doRequest: async (path: string, data: any, options: any, tryCount: number = 1): Promise<any> => {
-		const { json = true, method = 'GET', errors } = options;
+		const { json = true, method = 'GET', errors, maxTry = 3 } = options;
 		const { headers, url, body } = await Http.prepareSendData(path, data, options);
 
 		try {
 			const response = await fetch(url, { method, headers, body });
-			if (json) {
+
+			if (json && response.status !== 500) {
 				return {
 					status: response.status,
 					data: await response.json(),
@@ -61,10 +64,11 @@ const Http = {
 
 			return response;
 		} catch (error) {
-			console.error('Error:', error);
-			if (errors && tryCount < errors.maxTry) {
-				return Http.doRequest(path, data, options, tryCount + 1);
-			}
+			console.error('Error doRequest:', error);
+
+			if (errors && tryCount < maxTry) return Http.doRequest(path, data, options, tryCount + 1);
+
+			Sentry.captureException(error);
 			throw error;
 		}
 	},

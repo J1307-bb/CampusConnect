@@ -11,6 +11,7 @@ import { createIconSet } from "react-native-vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Session from "@/services/Session";
+import NotificationService from "@/services/Notifications";
 
 const Container = styled(View);
 const ProfileCard = styled(View);
@@ -46,6 +47,7 @@ export default function PerfilTab() {
   }
 
   useEffect(() => {
+    NotificationService.setNotificationListener();
     getSessionData();
   }, []);
 

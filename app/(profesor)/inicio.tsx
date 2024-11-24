@@ -14,10 +14,13 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { router } from "expo-router";
 import { useEffect } from "react";
 
+import { signOut } from "@/lib/appwrite";
 import Session from "@/services/Session";
 import Cache from "@/services/Cache";
 import Utils from "@/services/Utils";
 import Catalogs from "@/services/Catalogs";
+import CustomButton from "@/components/CustomButton";
+import NotificationsService from "@/services/Notifications";
 
 const HomeProfesor = () => {
   const [taskType, setTaskType] = useState("task");
@@ -25,7 +28,12 @@ const HomeProfesor = () => {
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [fechaVencimiento, setFechaVencimiento] = useState<any>('');
-  const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+  const [datePickerVisible, setDatePickerVisible] = useState(false);
+
+  const handlePress = async () => {
+    await signOut();
+    router.replace("/iniciar-sesion");
+  };
 
   const [grupos, setGrupos] = useState([
     {
@@ -44,6 +52,7 @@ const HomeProfesor = () => {
     },
   }]);
   const [sessionData, setSessionData] = useState({
+    id: '',
     nombre: '',
     apellidos: '',
     idGrupo: {
@@ -60,7 +69,6 @@ const HomeProfesor = () => {
   };
 
   const handleConfirmDate = (selectedDate: Date) => {
-    console.log(selectedDate);
     setFechaVencimiento(selectedDate);
     handleCloseDatePicker();
   };
@@ -68,12 +76,16 @@ const HomeProfesor = () => {
   const colors = ['bg-blue-500', 'bg-yellow-500', 'bg-green-500', 'bg-red-500', 'bg-indigo-500', 'bg-purple-500', 'bg-pink-500', 'bg-gray-500'];
 
   useEffect(() => {
+    NotificationsService.setNotificationListener();
+
     const fetchData = async () => {
+      await Cache.loadNotRequiredCatalogs();
+
       try {
         const [sessionData, gruposData, materiasData,] = await Promise.all([
           await Session.getSessionData(),
-          await Cache.getData("gruposMaterias"),
-          await Cache.getData("materias"),
+          await Cache.getData("gruposAsignados"),
+          await Cache.getData("materiasAsignadas"),
         ]);
 
         setSessionData(sessionData);
@@ -88,17 +100,20 @@ const HomeProfesor = () => {
   }, []);
 
   const sendData = async () => {
+    //TODO: Agregar idMateria
     const opts = {
       titulo,
       descripcion,
       fechaVencimiento,
       to: selectedGroup,
+      idProfesor: sessionData.id,
+      idMateria: '',
     };
 
     if (taskType === 'task') {
-      await Catalogs.createTask(opts);
+      await Catalogs.postTareas(opts);
     } else {
-      await Catalogs.createNotice(opts);
+      await Catalogs.postAviso(opts);
     }
   };
 
@@ -113,6 +128,12 @@ const HomeProfesor = () => {
           <View className="mb-6">
             <Text className="text-2xl font-semibold">Hola, {sessionData.nombre}</Text>
             <Text className="text-lg text-gray-500">Bienvenido</Text>
+            <CustomButton
+              title={"Cerrar Sesión"}
+              handlePress={handlePress}
+              containerStyles={"items-center"}
+              textStyles={"text-white text-center font-bold text-lg"}
+            />
           </View>
 
           {/* Menú de opciones */}
@@ -266,7 +287,7 @@ const HomeProfesor = () => {
                   </TouchableOpacity>
 
                   <DateTimePickerModal
-                    isVisible={isDatePickerVisible}
+                    isVisible={datePickerVisible}
                     mode="datetime"
                     onConfirm={handleConfirmDate}
                     onCancel={handleCloseDatePicker}

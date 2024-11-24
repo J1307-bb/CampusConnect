@@ -4,6 +4,8 @@ import Screen from "@/components/Screen";
 import { useState, useEffect } from "react";
 import { IMateria } from "@/interfaces/IInterfaces";
 import Cache from "@/services/Cache";
+import NotificationService from "@/services/Notifications";
+
 import {
   FlatList,
   Text,
@@ -24,6 +26,7 @@ export default function ClasesTab() {
   }
 
   useEffect(() => {
+    NotificationService.setNotificationListener();
     getData();
   }, []);
 

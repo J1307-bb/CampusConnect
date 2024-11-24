@@ -11,6 +11,7 @@ import Utils from "@/services/Utils";
 import { IMateria, IAviso } from "@/interfaces/IInterfaces";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { styled } from "nativewind";
+import NotificationService from "@/services/Notifications";
 
 const CategoryCard = styled(View);
 const NoticeCard = styled(View);
@@ -32,7 +33,10 @@ export default function InicioTab() {
   const theme = useTheme();
 
   useEffect(() => {
+    NotificationService.setNotificationListener();
     const fetchData = async () => {
+      await Cache.loadNotRequiredCatalogs();
+
       try {
         const [sessionData, materiasData, avisosData] = await Promise.all([
           Session.getSessionData(),

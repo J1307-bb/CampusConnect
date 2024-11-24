@@ -2,10 +2,12 @@ import { Alert, Platform } from "react-native";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import * as Sentry from "@sentry/react-native";
+import { router } from "expo-router";
 
 import Constants from "expo-constants";
 import Http from "./Http";
 import Session from "./Session";
+import { HookType } from "expo/config";
 
 Notifications.setNotificationHandler({
 	handleNotification: async () => ({
@@ -39,6 +41,31 @@ const NotificationService = {
         } catch (e: any) {
             NotificationService.handleRegistrationError(e?.error || e?.message || `${e}`);
         }
+    },
+    setNotificationListener: (receiveCallback?: Function, onPressCallback?: Function ) => {
+        const listener = {
+            current: null as any,
+        };
+        const response = {
+            current: null as any,
+        }
+        listener.current = Notifications.addNotificationReceivedListener(notification => {
+            if(receiveCallback) receiveCallback(notification);
+        });
+
+        response.current = Notifications.addNotificationResponseReceivedListener(response => {
+            if (response?.notification?.request?.content?.data?.url) {
+                console.log("Redirecting to: ", response.notification.request.content.data.url);
+                router.push(response.notification.request.content.data.url);
+            }
+
+            if (onPressCallback) onPressCallback(response);
+        });
+
+        return () => {
+            Notifications.removeNotificationSubscription(listener.current);
+            Notifications.removeNotificationSubscription(response.current);
+        };
     },
     registerDevice: async () => {
         if (Platform.OS === "android") {
@@ -74,11 +101,11 @@ const NotificationService = {
             NotificationService.handleRegistrationError("Must use physical device for push notifications");
         }
     },
-    sendNofication: (opts: any) => {
+    sendNofication: async (opts: any) => {
         const { type = 'grupo', to, message } = opts;
 
         try {
-            Http.post("/notificaciones", { type, to, message });
+            await Http.post("/notificaciones", { type, to, message });
         } catch (e: any) {
             Sentry.captureException(e);
         }

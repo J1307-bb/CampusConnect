@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Sentry from "@sentry/react-native";
 
 import Catalogs from './Catalogs';
 import Session from './Session';
@@ -7,39 +8,53 @@ const Cache = {
         {
             name: 'materias',
             accountType: 'estudiante',
-            path: Catalogs.getMaterias
+            fn: Catalogs.getMaterias,
+            required: true,
         },
         {
-            name: 'materias',
+            name: 'materiasAsignadas',
             accountType: 'profesor',
-            path: Catalogs.getMateriasProfesor
+            fn: Catalogs.getMateriasProfesor,
+            required: true,
         },
         {
-            name: 'grupos',
+            name: 'gruposAsignados',
             accountType: 'profesor',
-            path: Catalogs.getGrupos
+            fn: Catalogs.getGruposAsignados,
+            required: true,
         },
         {
-            name: 'gruposMaterias',
+            name: 'estudiantesAsignados',
             accountType: 'profesor',
-            path: async (): Promise<any> => {
-                const grupos = await Cache.getData('grupos');
-                const materias = await Cache.getData('materias');
-                const gruposId = Array.from(new Set(materias.map((materia: any) => materia.idGrupo)));
-
-                return grupos.filter((grupo: any) => gruposId.includes(grupo.id));
-            }
+            fn: Catalogs.getEstudiantesAsignados,
+            required: false,
         }
     ],
-    loadCatalogs: async () => {
-        const { catalogs = [] } = Cache;
+    getAccountTypeCatalogs: async () => {
         const { esProfesor } = await Session.getSessionData();
+        return Cache.catalogs.filter((catalog) => esProfesor ? catalog.accountType === 'profesor' : catalog.accountType === 'estudiante') ?? [];
+    },
+    loadRequiredCatalogs: async () => {
+        let catalogsToLoad = await Cache.getAccountTypeCatalogs();
+        catalogsToLoad = catalogsToLoad.filter((catalog) => catalog.required);
 
-        const catalogsToLoad = catalogs.filter((catalog) => esProfesor ? catalog.accountType === 'profesor' : catalog.accountType === 'estudiante');
+        await Cache.loadCatalogs(catalogsToLoad);
+    },
+    loadNotRequiredCatalogs: async () => {
+        let catalogsToLoad = await Cache.getAccountTypeCatalogs();
+        catalogsToLoad = catalogsToLoad.filter((catalog) => !catalog.required);
 
+        await Cache.loadCatalogs(catalogsToLoad);
+    },
+    loadCatalogs: async (catalogsToLoad: any) => {
         for (const catalog of catalogsToLoad) {
-            const data = await catalog.path();
-            await AsyncStorage.setItem(catalog.name, JSON.stringify(data));
+            try {
+                let data = typeof catalog.fn === 'function' ? await catalog.fn() : [];
+                if (data && !Array.isArray(data)) data = [data];
+                await AsyncStorage.setItem(catalog.name, JSON.stringify(data));
+            } catch (error) {
+                Sentry.captureMessage(`Error loading catalog ${catalog.name}: ${error}`);
+            }
         }
     },
     getData: async (catalogName: string) => {
