@@ -20,6 +20,9 @@ const EncuestaDinamica = () => {
   const [titulo, setTitulo] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [encuestas, setEncuestas] = useState<any>([]);
+  const [sessionData, setSessionData] = useState<any>({
+    id: ''
+  });
   const [preguntas, setPreguntas] = useState([
     {
       id: 1,
@@ -39,13 +42,15 @@ const EncuestaDinamica = () => {
     NotificationService.setNotificationListener();
     const fetchData = async () => {
       try {
-        const [gruposData, encuestasData] = await Promise.all([
+        const [gruposData, encuestasData, sessionData] = await Promise.all([
           await Cache.getData("gruposAsignados"),
           await Catalogs.getEncuestasCreadas(),
+          await Cache.getData("sessionData"),
         ]);
 
         setGrupos([{ nombre: 'Todos', id: 'todos' }, ...gruposData]);
         setEncuestas(encuestasData);
+        setSessionData(sessionData);
       } catch (error) {
         console.error("Error fetching data: ", error);
       }
@@ -145,9 +150,11 @@ const EncuestaDinamica = () => {
     ]);
 
     Catalogs.postEncuesta({
-      titulo, preguntas, to: destinatario
+      titulo, preguntas, to: destinatario, idProfesor: sessionData.id,
     })
   };
+
+  // TODO: Eliminar encuesta
 
   return (
     <SafeAreaView style={tw`flex-1 bg-white`}>
@@ -283,13 +290,13 @@ const EncuestaDinamica = () => {
               <Text style={tw`text-lg font-semibold text-gray-900 mb-4`}>
                 Encuestas realizadas
               </Text>
-              {encuestas.map((encuesta: any) => (
+              {encuestas.map((encuesta: any, index: number) => (
                 <View
                   key={encuesta.id}
                   style={tw`bg-white p-4 rounded-lg mb-4 shadow-md`}
                 >
                   <Text style={tw`text-gray-800 font-bold`}>
-                    Encuesta {encuesta.id}
+                    Encuesta {index + 1}
                   </Text>
                   {encuesta.preguntas.map((pregunta: any) => (
                     <Text key={pregunta.id} style={tw`text-gray-700 mt-2`}>

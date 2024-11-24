@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, ScrollView, ProgressBarAndroid, Alert, SafeAreaView, Modal } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import tw from 'tailwind-react-native-classnames';
+
 import Session from '@/services/Session';
 import Http from '@/services/Http';
+import Cache from '@/services/Cache';
 
 interface File {
   id: number;
@@ -17,11 +19,25 @@ interface File {
 
 const FileUploader = () => {
   const [files, setFiles] = useState<File[]>([]);
-  const [selectedClass, setSelectedClass] = useState('Todos');
-  const [isModalVisible, setModalVisible] = useState(false);
+  const [selectedClass, setSelectedClass] = useState('todos');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [grupos, setGrupos] = useState([{ nombre: '', id: '' }]);
 
-  const classes = ["Todos", "IDYS101", "IDYGS", "IDYGS102"];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [gruposData] = await Promise.all([
+          await Cache.getData("gruposAsignados"),
+        ]);
 
+        setGrupos([{ nombre: 'Todos', id: 'todos' }, ...gruposData]);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      }
+    };
+
+    fetchData();
+  }, []);
   const uploadFile = async (file: any): Promise<File> => {
     const name = `${Date.now()}${(file.name || '')}`;
     const [, extension] = file.mimeType.split('/');
@@ -37,8 +53,13 @@ const FileUploader = () => {
       uploader: `${sessionData.nombre} ${sessionData.apellidos}`
     };
 
-    const response = await Http.post('/recursosacademicos', fileData, { sendFile: true });
+    const formData = new FormData();
+    Object.entries(fileData).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
 
+    const response = await Http.post('/recursosacademicos', formData, { sendFile: true });
+    console.log('Response:', response);
     return fileData
   };
 
@@ -129,7 +150,7 @@ const FileUploader = () => {
         <View style={tw`flex-row items-center mb-6`}>
           <Text style={tw`text-lg font-semibold mr-3`}>Seleccionar clase:</Text>
           <TouchableOpacity onPress={() => setModalVisible(true)} style={tw`flex-row items-center bg-gray-200 rounded-full px-3 py-1`}>
-            <Text style={tw`text-gray-700 mr-2`}>{selectedClass}</Text>
+            <Text style={tw`text-gray-700 mr-2`}>{ grupos.find(item => item.id === selectedClass)?.nombre }</Text>
             <Icon name="chevron-down" size={16} color="gray" />
           </TouchableOpacity>
         </View>
@@ -149,20 +170,20 @@ const FileUploader = () => {
         />
       </View>
 
-      <Modal visible={isModalVisible} transparent={true} animationType="slide">
+      <Modal visible={modalVisible} transparent={true} animationType="slide">
         <View style={tw`flex-1 justify-center bg-black bg-opacity-50`}>
           <View style={tw`bg-white mx-6 p-4 rounded-lg`}>
             <Text style={tw`text-lg font-semibold mb-4`}>Selecciona una clase</Text>
-            {classes.map((cls, index) => (
+            {grupos.map(({ id, nombre }) => (
               <TouchableOpacity
-                key={index}
+                key={id}
                 onPress={() => {
-                  setSelectedClass(cls);
+                  setSelectedClass(id);
                   setModalVisible(false);
                 }}
                 style={tw`py-2 border-b border-gray-200`}
               >
-                <Text style={tw`text-gray-700`}>{cls}</Text>
+                <Text style={tw`text-gray-700`}>{nombre}</Text>
               </TouchableOpacity>
             ))}
             <TouchableOpacity onPress={() => setModalVisible(false)} className={`mt-4 p-2 bg-orange-400 rounded-lg`}>
