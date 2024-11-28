@@ -30,10 +30,7 @@ const HomeProfesor = () => {
   const [fechaVencimiento, setFechaVencimiento] = useState<any>('');
   const [datePickerVisible, setDatePickerVisible] = useState(false);
 
-  const handlePress = async () => {
-    await signOut();
-    router.replace("/iniciar-sesion");
-  };
+  //TODO: Agregar boton cerrar sesion
 
   const [grupos, setGrupos] = useState([
     {
@@ -128,12 +125,6 @@ const HomeProfesor = () => {
           <View className="mb-6">
             <Text className="text-2xl font-semibold">Hola, {sessionData.nombre}</Text>
             <Text className="text-lg text-gray-500">Bienvenido</Text>
-            <CustomButton
-              title={"Cerrar Sesión"}
-              handlePress={handlePress}
-              containerStyles={"items-center"}
-              textStyles={"text-white text-center font-bold text-lg"}
-            />
           </View>
 
           {/* Menú de opciones */}

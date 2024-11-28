@@ -22,23 +22,17 @@ const Http = {
 		let body: any;
 
 		if (method.toUpperCase() !== 'GET') {
-			if (sendFile) {
-				headersData = await Http.prepareHeaders({
-					...headersData,
-					"Content-Type": "multipart/form-data",
-				});
-
-				body = new FormData();
-
-				Object.keys(data).forEach(key => {
-					body.append(key, data[key]);
-				});
-			} else {
+			if (!sendFile) {
 				headersData = await Http.prepareHeaders({
 					...headersData,
 					"Content-Type": "application/json",
 				});
 				body = JSON.stringify(data);
+			} else {
+				body = new FormData();
+				Object.keys(data).forEach((key) => {
+					body.append(key, data[key]);
+				});
 			}
 		} else if (data && Object.keys(data).length > 0) {
 			const character = url.includes('?') ? '&' : '?';
@@ -72,17 +66,17 @@ const Http = {
 			throw error;
 		}
 	},
-	get: (path: string, data: any, options?: any) => {
-		return Http.doRequest(path, data, { ...options, method: 'GET' });
+	get: async (path: string, data: any, options?: any) => {
+		return await Http.doRequest(path, data, { ...options, method: 'GET' });
 	},
-	post: (path: string, data: any, options?: any) => {
-		return Http.doRequest(path, data, { ...options, method: 'POST' });
+	post: async (path: string, data: any, options?: any) => {
+		return await Http.doRequest(path, data, { ...options, method: 'POST' });
 	},
-	put: (path: string, data: any, options?: any) => {
-		return Http.doRequest(path, data, { ...options, method: 'PUT' });
+	put: async (path: string, data: any, options?: any) => {
+		return await Http.doRequest(path, data, { ...options, method: 'PUT' });
 	},
-	delete: (path: string, data: any, options?: any) => {
-		return Http.doRequest(path, data, { ...options, method: 'DELETE' });
+	delete: async (path: string, data: any, options?: any) => {
+		return await Http.doRequest(path, data, { ...options, method: 'DELETE' });
 	},
 };
 export default Http;

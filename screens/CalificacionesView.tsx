@@ -37,7 +37,7 @@ const CalificacionesView = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const calificacionesData: ICalificacion[] = await Catalogs.getCalificaciones();
+        const calificacionesData: ICalificacion[] = await Catalogs.getCalificacionesRecibidas();
         setCalificaciones(calificacionesData);
         setCalificacionesFiltered(calificacionesData.filter((item) => item.unidad == selectUnidad));
       } catch (error) {
@@ -99,7 +99,7 @@ const CalificacionesView = () => {
           </Text>
         </View>
 
-        <View className="flex mx-8 justify-between">
+        <View className="flex justify-between">
           <TouchableOpacity
             className="bg-white shadow-sm p-2 rounded-lg"
             onPress={toggleTurnoModal}
@@ -126,7 +126,8 @@ const CalificacionesView = () => {
                 <TouchableOpacity
                   className="p-4 border-b border-gray-200"
                   onPress={() => {
-                    setSelectUnidad(item.key), toggleTurnoModal();
+                    setSelectUnidad(item.key);
+                    toggleTurnoModal();
                     setCalificacionesFiltered(calificaciones.filter((cal) => cal.unidad == item.key));
                   }}
                 >
