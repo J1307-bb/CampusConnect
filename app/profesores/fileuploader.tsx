@@ -7,10 +7,12 @@ import tw from 'tailwind-react-native-classnames';
 import Session from '@/services/Session';
 import Http from '@/services/Http';
 import Cache from '@/services/Cache';
+import Utils from '@/services/Utils';
 
 interface File {
   id: number;
   name: string;
+  nombre: string;
   type: string;
   size: string;
   status: 'ready' | 'uploading' | 'done';
@@ -38,28 +40,28 @@ const FileUploader = () => {
 
     fetchData();
   }, []);
-  const uploadFile = async (file: any): Promise<File> => {
+
+  const uploadFile = async (file: any) => {
     const name = `${Date.now()}${(file.name || '')}`;
     const [, extension] = file.mimeType.split('/');
     const sessionData = await Session.getSessionData();
 
+    file.name = name;
+    file.uri = await Utils.base64FromUri(file.uri);
+
     const fileData = {
       id: Date.now(),
-      name: name,
-      file,
+      name: 'file',
+      nombre: name,
+      files: [file],
       type: extension.toUpperCase() || 'UNKNOWN',
       size: file.size || 0,
-      status: 'ready' as const,
-      uploader: `${sessionData.nombre} ${sessionData.apellidos}`
+      uploader: `${sessionData.nombre} ${sessionData.apellidos}`,
+      bucket: 'recursosacademicos'
     };
 
-    const formData = new FormData();
-    Object.entries(fileData).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
+    const response = await Http.post('/archivos', fileData, { sendFile: true });
 
-    const response = await Http.post('/recursosacademicos', formData, { sendFile: true });
-    console.log('Response:', response);
     return fileData
   };
 
@@ -82,16 +84,14 @@ const FileUploader = () => {
         copyToCacheDirectory: true,
       });
 
-      console.log('Result:', result);
-
       if (result?.assets?.length) {
         const file = result.assets[0];
-        const newFile: File = await uploadFile(file);
+        const newFile: any = await uploadFile(file);
 
         setFiles((prevFiles) => [...prevFiles, newFile]);
       } else if (result?.output?.length) {
         const file = result.output[0];
-        const newFile: File = await uploadFile(file);
+        const newFile: any = await uploadFile(file);
 
         setFiles((prevFiles) => [...prevFiles, newFile]);
       } else if (result.canceled) {
@@ -135,7 +135,7 @@ const FileUploader = () => {
         <View style={tw`flex-row items-center`}>
           <Icon name={iconName} size={32} color={iconColor} style={tw`mr-4`} />
           <View>
-            <Text style={tw`font-semibold text-sm`}>{item.name}</Text>
+            <Text style={tw`font-semibold text-sm`}>{item.nombre}</Text>
             <Text style={tw`text-gray-500 text-xs`}>{item.uploader}</Text>
             <Text style={tw`text-gray-500 text-xs`}>{getFileSize(Number(item.size))}</Text>
           </View>

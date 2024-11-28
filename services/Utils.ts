@@ -155,5 +155,16 @@ const Utils = {
         const today = new Date().getDay();
         return days[lang][today] || '';
     },
+    base64FromUri: async (uri: string) => {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        const reader = new FileReader();
+
+        return new Promise((resolve, reject) => {
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    },
 };
 export default Utils;

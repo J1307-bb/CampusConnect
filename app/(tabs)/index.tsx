@@ -59,7 +59,7 @@ export default function InicioTab() {
     <Screen className="bg-gray-100">
       <ScrollView className="flex-1">
         {/* Saludo */}
-        <View className="px-4 py-4">
+        <View className="px-6 py-4">
           <View className="flex-row justify-between items-center">
             <Text className="text-2xl font-bold text-gray-800">
               Hola, <Text className="text-yellow-500">{sessionData.nombre}</Text>
@@ -70,25 +70,27 @@ export default function InicioTab() {
           </View>
         </View>
         {/* Categorías */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="px-6 py-2 mb-6"
-        >
-          {materias.map(({ materia, id, imagen }) => (
-            <TouchableOpacity key={id} className="mr-4">
-              <View className="w-24 h-36 bg-gray-200 rounded-lg overflow-hidden">
-                <Image
-                  source={{ uri: imagen || "https://via.placeholder.com/100" }}
-                  className="w-full h-20"
-                />
-                <Text className="text-center justify-center items-center m-2 text-sm font-semibold">
-                  {materia}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        <View className="px-6">
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="py-2 mb-6"
+          >
+            {materias.map(({ materia, id, imagen }, index) => (
+              <TouchableOpacity key={id} className={index == 0 ? '': 'ml-4' }>
+                <View className="w-24 h-36 bg-gray-200 rounded-lg overflow-hidden">
+                  <Image
+                    source={{ uri: imagen || "https://via.placeholder.com/100" }}
+                    className="w-full h-20"
+                  />
+                  <Text className="text-center justify-center items-center m-2 text-sm font-semibold">
+                    {materia}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
         {/* Clases de Hoy */}
         <View className="px-6 mb-7">
           <View className="flex-row justify-between items-center mb-4">
@@ -134,7 +136,7 @@ export default function InicioTab() {
           <View >
           <TouchableOpacity
             onPress={() => router.push("/mapa" as any)}
-            className="bg-white p-5 rounded-2xl shadow-md border border-yellow-500/50 flex-row items-center"
+            className="bg-white p-5 rounded-2xl shadow-md border border-yellow-500/50 flex-row items-center mr-1"
           >
             <Icon name="map-marker" size={30} color="orange" />
             <View >
