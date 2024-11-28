@@ -1,69 +1,115 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Modal, Button } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, Alert } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
+import Http from '../services/Http';
 
-const UniversityMap = () => {
-  const [selectedBuilding, setSelectedBuilding] = useState<any>(null);
+interface MarkerData {
+  id: number;
+  title: string;
+  coordinate: {
+    latitude: number;
+    longitude: number;
+  };
+}
 
-  // Datos de ejemplo: edificios con nombre y coordenadas
-  const buildings = [
-    {
-      id: 1,
-      name: 'Edificio de Ciencias',
-      description: 'Laboratorios de física, química y biología.',
-      latitude: 1000,
-      longitude: 1000
-    },
-    {
-      id: 2,
-      name: 'Edificio de Humanidades',
-      description: 'Biblioteca central y salones de historia y literatura.',
-      latitude: 100,
-      longitude: 100,
-    },
-  ];
+interface Aula {
+  aula: string;
+}
+
+const UniversityMap: React.FC = () => {
+  const [markers, setMarkers] = useState<MarkerData[]>([]);
+  const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null);
+  const [aulas, setAulas] = useState<string[]>([]);
+
+  const fixedRegion = {
+    latitude: 21.050216137617067,
+    longitude: -86.84662860283886,
+    latitudeDelta: 0.003,
+    longitudeDelta: 0.003,
+  };
+
+  const fetchMarkers = async () => {
+    try {
+      const response = await Http.get('/edificios', {});
+      if (response.status !== 200) throw new Error('Error al obtener edificios');
+
+      const markersData = response.data.map((edificio: any) => {
+        const [latitude, longitude] = edificio.coordenadas
+          .split(',')
+          .map((coord: string) => parseFloat(coord.trim()));
+
+        return {
+          id: edificio.id,
+          title: edificio.nombre,
+          coordinate: {
+            latitude,
+            longitude,
+          },
+        };
+      });
+
+      setMarkers(markersData);
+    } catch (error) {
+      console.error('Error al obtener edificios:', error);
+      Alert.alert('Error', 'No se pudieron cargar los datos desde la API.');
+    }
+  };
+
+  const fetchAulas = async (idEdificio: number) => {
+    try {
+      const response = await Http.get(`/aulas?idEdificio=${idEdificio}`, {});
+      if (response.status !== 200) throw new Error('Error al obtener aulas');
+
+      const aulasList = response.data.map((aula: Aula) => aula.aula);
+      setAulas(aulasList);
+    } catch (error) {
+      console.error('Error al obtener aulas:', error);
+      Alert.alert('Error', 'No se pudieron cargar las aulas del edificio.');
+    }
+  };
+
+  const handleMarkerPress = (marker: MarkerData) => {
+    setSelectedMarker(marker);
+    fetchAulas(marker.id);
+  };
+
+  useEffect(() => {
+    fetchMarkers();
+  }, []);
 
   return (
     <View style={styles.container}>
       <MapView
         style={styles.map}
-        
-        initialRegion={{
-          latitude: 21.0495167,
-          longitude: -86.8469238,
-          latitudeDelta: 0.003,
-          longitudeDelta: 0.004,
-        }}
+        initialRegion={fixedRegion}
+        showsUserLocation={true}
       >
-        {buildings.map((building) => (
+        {markers.map((marker) => (
           <Marker
-            key={building.id}
-            coordinate={{ latitude: building.latitude, longitude: building.longitude }}
-            title={building.name}
-            onPress={() => setSelectedBuilding(building)}
+            key={marker.id}
+            coordinate={marker.coordinate}
+            title={marker.title}
+            onPress={() => handleMarkerPress(marker)}
           />
         ))}
       </MapView>
 
-      {/* Modal para mostrar información sobre el edificio seleccionado */}
-      {selectedBuilding && (
-        <Modal
-          transparent={true}
-          animationType="slide"
-          visible={!!selectedBuilding}
-          onRequestClose={() => setSelectedBuilding(null)}
-        >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.title}>{selectedBuilding.name}</Text>
-              <Text>{selectedBuilding.description}</Text>
-              <Button title="Cerrar" onPress={() => setSelectedBuilding(null)} />
-            </View>
-          </View>
-        </Modal>
+      {selectedMarker && (
+        <View style={styles.infoBox}>
+          <Text style={styles.title}>{selectedMarker.title}</Text>
+          <Text style={styles.subtitle}>Aulas:</Text>
+          {aulas.length > 0 ? (
+            aulas.map((aula, index) => (
+              <Text key={index} style={styles.tag}>
+                {aula}
+              </Text>
+            ))
+          ) : (
+            <Text>No hay aulas asociadas</Text>
+          )}
+        </View>
       )}
     </View>
-    
   );
 };
 
@@ -72,26 +118,34 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   map: {
+    flex: 1,
     width: '100%',
     height: '100%',
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    width: 300,
-    padding: 20,
+  infoBox: {
+    position: 'absolute',
+    bottom: 50,
+    left: 10,
+    right: 10,
     backgroundColor: 'white',
+    padding: 10,
     borderRadius: 10,
-    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
   },
   title: {
-    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 10,
+    fontSize: 16,
+  },
+  subtitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginTop: 10,
+  },
+  tag: {
+    fontSize: 14,
+    color: '#555',
   },
 });
 
