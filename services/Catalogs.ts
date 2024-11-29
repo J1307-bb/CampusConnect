@@ -55,7 +55,7 @@ const Catalogs = {
         return await Catalogs.getCatalog('/encuestas/creadas');
     },
     getEncuestasRespondidas: async () => {
-        return await Catalogs.getCatalog('/encuestas/respondidas');
+        return await Catalogs.getCatalog('/respuestasencuestas/enviadas');
     },
     getEncuestasPendientes: async () => {
         return await Catalogs.getCatalog('/encuestas/recibidas');
