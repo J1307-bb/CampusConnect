@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,7 +11,18 @@ import {
 import tw from "tailwind-react-native-classnames";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
+import Catalogs from "@/services/Catalogs";
+import Cache from "@/services/Cache";
+import NotificationService from "@/services/Notifications";
+
 const EncuestaDinamica = () => {
+  const [destinatario, setDestinatario] = useState("todos");
+  const [titulo, setTitulo] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [encuestas, setEncuestas] = useState<any>([]);
+  const [sessionData, setSessionData] = useState<any>({
+    id: ''
+  });
   const [preguntas, setPreguntas] = useState([
     {
       id: 1,
@@ -22,11 +33,31 @@ const EncuestaDinamica = () => {
       ],
     },
   ]);
-  const [destinatario, setDestinatario] = useState("Todos");
-  const [modalVisible, setModalVisible] = useState(false);
-  const [encuestas, setEncuestas] = useState<any>([]);
+  const [grupos, setGrupos] = useState<any>([{
+    nombre: '',
+    id: '',
+  }]);
 
-  const destinatarios = ["Todos", "IDYS-101", "IDYGS-102", "IDYGS-103"];
+  useEffect(() => {
+    NotificationService.setNotificationListener();
+    const fetchData = async () => {
+      try {
+        const [gruposData, encuestasData, sessionData] = await Promise.all([
+          await Cache.getData("gruposAsignados"),
+          await Catalogs.getEncuestasCreadas(),
+          await Cache.getData("sessionData"),
+        ]);
+
+        setGrupos([{ nombre: 'Todos', id: 'todos' }, ...gruposData]);
+        setEncuestas(encuestasData);
+        setSessionData(sessionData);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const agregarPregunta = () => {
     const nuevaPregunta = {
@@ -117,7 +148,13 @@ const EncuestaDinamica = () => {
         ],
       },
     ]);
+
+    Catalogs.postEncuesta({
+      titulo, preguntas, to: destinatario, idProfesor: sessionData.id,
+    })
   };
+
+  // TODO: Eliminar encuesta
 
   return (
     <SafeAreaView style={tw`flex-1 bg-white`}>
@@ -131,7 +168,7 @@ const EncuestaDinamica = () => {
             style={tw`bg-blue-100 rounded-full px-4 py-2 flex-row items-center`}
           >
             <Text style={tw`text-blue-800 font-semibold mr-2`}>
-              {destinatario}
+              {grupos.find((d: any) => d.id === destinatario)?.nombre}
             </Text>
             <Icon name="chevron-down" size={20} color="blue" />
           </TouchableOpacity>
@@ -158,13 +195,13 @@ const EncuestaDinamica = () => {
               <Text style={tw`text-lg font-bold mb-4 text-gray-900`}>
                 Seleccionar destinatario
               </Text>
-              {destinatarios.map((opcion) => (
+              {grupos.map((grupo: any) => (
                 <TouchableOpacity
-                  key={opcion}
-                  onPress={() => seleccionarDestinatario(opcion)}
+                  key={grupo.nombre}
+                  onPress={() => seleccionarDestinatario(grupo.id)}
                   style={tw`p-2 border-b border-gray-200`}
                 >
-                  <Text style={tw`text-gray-700`}>{opcion}</Text>
+                  <Text style={tw`text-gray-700`}>{grupo.nombre}</Text>
                 </TouchableOpacity>
               ))}
               <TouchableOpacity
@@ -176,6 +213,8 @@ const EncuestaDinamica = () => {
             </View>
           </View>
         </Modal>
+
+        <TextInput style={tw`border border-gray-300 rounded-lg p-2 mb-4`} placeholder="Título" value={titulo} onChangeText={setTitulo} />
 
         {/* Formulario de Preguntas */}
         {preguntas.map((pregunta) => (
@@ -251,13 +290,13 @@ const EncuestaDinamica = () => {
               <Text style={tw`text-lg font-semibold text-gray-900 mb-4`}>
                 Encuestas realizadas
               </Text>
-              {encuestas.map((encuesta: any) => (
+              {encuestas.map((encuesta: any, index: number) => (
                 <View
                   key={encuesta.id}
                   style={tw`bg-white p-4 rounded-lg mb-4 shadow-md`}
                 >
                   <Text style={tw`text-gray-800 font-bold`}>
-                    Encuesta {encuesta.id}
+                    Encuesta {index + 1}
                   </Text>
                   {encuesta.preguntas.map((pregunta: any) => (
                     <Text key={pregunta.id} style={tw`text-gray-700 mt-2`}>

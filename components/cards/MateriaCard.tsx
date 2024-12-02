@@ -14,7 +14,7 @@ export function AnimatedMateriaCard({ materia, index }: any) {
         useNativeDriver: true,
       }).start();
     }, [opacity, index]);
-  
+
     return (
       <Animated.View style={{ opacity }}>
         <MateriaCard materia={materia} />
@@ -22,16 +22,16 @@ export function AnimatedMateriaCard({ materia, index }: any) {
     );
   }
 
-const MateriaCard = ({ materia }: any) => {
+const MateriaCard = ({ materia: { materia, profesor, aula} }: any) => {
   return (
     <View className="bg-white w-full mb-4 p-9 rounded-xl border border-gray-300 shadow-md">
-      <Text className="text-lg font-bold ">{materia.title}</Text>
-      <Text className="text-gray-400 font-semibold">{materia.professor}</Text>
+      <Text className="text-lg font-bold ">{materia}</Text>
+      <Text className="text-gray-400 font-semibold">{profesor.nombre} {profesor.apellidos}</Text>
 
       <View className="flex-row justify-between materias-center mt-2">
         <View className="flex-row ">
           <TabBarIcon name="location" size={16} color="gray" />
-          <Text className="text-gray-800 mx-1">{materia.location}</Text>
+          <Text className="text-gray-800 mx-1">{aula}</Text>
         </View>
       </View>
 

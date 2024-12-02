@@ -5,9 +5,13 @@ import CustomButton from "@/components/CustomButton";
 import { router, useRouter } from "expo-router";
 import Images from "@/constants/Images";
 import { useGlobalContext } from "@/context/GlobalProvider";
-import { getCurrentUser, signIn } from "@/lib/appwrite";
+import Session from "@/services/Session";
+import Cache from "@/services/Cache";
+import Http from "@/services/Http";
+import * as Sentry from "@sentry/react-native";
+import NotificationService from "@/services/Notifications";
 
-const IniciarSesiom = () => {
+const IniciarSesion = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -16,10 +20,42 @@ const IniciarSesiom = () => {
 
   const router = useRouter();
 
-  const handleLogin = () => {
-    console.log("Email:", email);
-    console.log("Password:", password);
-    router.push("/(tabs)");
+
+  const navigateToDashboard = async () => {
+    const { esProfesor } = await Session.getSessionData();
+
+    if (esProfesor) {
+      router.push("/inicio" as any);
+    } else {
+      router.push("/(tabs)" as any);
+    }
+  };
+
+  const handleLogin = async () => {
+    Sentry.startSpan({ name: "Iniciar sesión" }, async () => {
+      try {
+        console.log("Iniciando sesión...");
+        const { data = {} } = await Http.post('/login', { correo: email, contrasenia: password });
+
+        if (data.token) {
+          Sentry.startSpan({ name: "Cargar información" }, async () => {
+            await Session.setSessionData(data.token);
+            await Session.setAccessToken(data.token);
+          });
+
+          Sentry.startSpan({ name: "Cargar catálogos" }, async () => {
+            await Cache.loadRequiredCatalogs();
+          });
+
+          await NotificationService.registerDevice();
+          await navigateToDashboard();
+        } else {
+            Sentry.captureMessage("Error al iniciar sesión: Inicio de sesión fallido o no autorizado");
+        }
+      } catch (error) {
+          Sentry.captureException(error);
+      }
+    });
   };
 
   /* const handleLogin = async () => {
@@ -110,4 +146,4 @@ const IniciarSesiom = () => {
   );
 };
 
-export default IniciarSesiom;
+export default IniciarSesion;

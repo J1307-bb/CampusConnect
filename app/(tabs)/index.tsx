@@ -1,59 +1,96 @@
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import Screen from "@/components/Screen";
-import { router } from "expo-router";
-import React, { useState } from "react";
+import { Link, router } from "expo-router";
+import React, { useState, useEffect } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import materias from "@/data/materias.json";
-import { styled } from "nativewind";
+import { SegmentedButtons, useTheme } from "react-native-paper";
+import Session from "@/services/Session";
+import Catalogs from "@/services/Catalogs";
+import Cache from "@/services/Cache";
+import Utils from "@/services/Utils";
+import { IMateria, IAviso } from "@/interfaces/IInterfaces";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { styled } from "nativewind";
+import NotificationService from "@/services/Notifications";
 
 const CategoryCard = styled(View);
 const NoticeCard = styled(View);
 
 export default function InicioTab() {
   const [currentSection, setCurrentSection] = useState("Avisos");
+  const [materias, setMaterias] = useState<IMateria[]>([]);
+  const [avisos, setAvisos] = useState<IAviso[]>([]);
+  const [sessionData, setSessionData] = useState({
+    nombre: '',
+    idGrupo: {
+      id:''
+    },
+  });
   const handleSectionChange = (section: string) => {
     setCurrentSection(section);
   };
+
+  const theme = useTheme();
+
+  useEffect(() => {
+    NotificationService.setNotificationListener();
+    const fetchData = async () => {
+      await Cache.loadNotRequiredCatalogs();
+
+      try {
+        const [sessionData, materiasData, avisosData] = await Promise.all([
+          Session.getSessionData(),
+          Cache.getData("materias"),
+          Catalogs.getAvisos(),
+        ]);
+
+        setSessionData(sessionData);
+        setMaterias(materiasData);
+        setAvisos(avisosData);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <Screen className="bg-gray-100">
       <ScrollView className="flex-1">
         {/* Saludo */}
-        <View className="px-4 py-4">
+        <View className="px-6 py-4">
           <View className="flex-row justify-between items-center">
             <Text className="text-2xl font-bold text-gray-800">
-              Hola, <Text className="text-yellow-500">Abril</Text>
+              Hola, <Text className="text-yellow-500">{sessionData.nombre}</Text>
             </Text>
             <TouchableOpacity>
               <TabBarIcon name="notifications" size={24} color="orange" />
             </TouchableOpacity>
           </View>
         </View>
-
         {/* Categorías */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="px-6 py-2 mb-6"
-        >
-          {materias.map((category, index) => (
-            <TouchableOpacity key={index} className="mr-3">
-              <CategoryCard className="w-28 h-40 bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200">
-                <Image
-                  source={{ uri: "https://via.placeholder.com/100" }}
-                  className="w-full h-20 rounded-t-2xl"
-                />
-                <View className="p-2 items-center justify-center">
-                  <Text className="text-center  text-sm font-semibold text-gray-800">
-                    {category.title}
+        <View className="px-6">
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="py-2 mb-6"
+          >
+            {materias.map(({ materia, id, imagen }, index) => (
+              <TouchableOpacity key={id} className={index == 0 ? '': 'ml-4' }>
+                <View className="w-24 h-36 bg-gray-200 rounded-lg overflow-hidden">
+                  <Image
+                    source={{ uri: imagen || "https://via.placeholder.com/100" }}
+                    className="w-full h-20"
+                  />
+                  <Text className="text-center justify-center items-center m-2 text-sm font-semibold">
+                    {materia}
                   </Text>
                 </View>
-              </CategoryCard>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
         {/* Clases de Hoy */}
         <View className="px-6 mb-7">
           <View className="flex-row justify-between items-center mb-4">
@@ -70,23 +107,23 @@ export default function InicioTab() {
               <TabBarIcon name="chevron-forward" size={20} color="orange" />
             </TouchableOpacity>
           </View>
-          <View className="bg-white p-5 rounded-2xl shadow-md border border-gray-200">
-            <Text className="text-lg font-semibold text-gray-800">
-              Desarrollo Móvil
-            </Text>
-            <View className="flex-row items-center mt-1">
-              <Icon name="clock-outline" size={16} color="gray" />
-              <Text className="text-gray-500 ml-2">09:00 - 11:00</Text>
-              <Icon
-                name="map-marker-outline"
-                size={16}
-                color="gray"
-                className="ml-4"
-              />
-              <Text className="text-gray-500 ml-2">Auditorio Principal</Text>
-            </View>
-            <Text className="text-gray-700 mt-2">Mam Mahnoor</Text>
-          </View>
+          {materias.filter((item) => item.dia === Utils.getToday().toLowerCase()).map(({ id, materia, horario, aula, profesor }) => (
+              <View className="bg-white p-5 rounded-2xl shadow-md border border-gray-200" key={id}>
+                <Text className="text-lg font-semibold">{materia}</Text>
+                <View className="flex-row items-center mt-1">
+                  <Icon name="clock-outline" size={16} color="gray" />
+                  <Text className="text-gray-500 ml-2">{horario}</Text>
+                  <Icon
+                    name="map-marker-outline"
+                    size={16}
+                    color="gray"
+                    className="ml-4"
+                  />
+                  <Text className="text-gray-500 ml-2">{aula}</Text>
+                </View>
+                <Text className="text-gray-700 mt-1">{profesor.nombre} {profesor.apellidos}</Text>
+              </View>
+          ))}
         </View>
 
         {/* Mapa Interactivo */}
@@ -99,7 +136,7 @@ export default function InicioTab() {
           <View >
           <TouchableOpacity
             onPress={() => router.push("/mapa" as any)}
-            className="bg-white p-5 rounded-2xl shadow-md border border-yellow-500/50 flex-row items-center"
+            className="bg-white p-5 rounded-2xl shadow-md border border-yellow-500/50 flex-row items-center mr-1"
           >
             <Icon name="map-marker" size={30} color="orange" />
             <View >
@@ -156,74 +193,37 @@ export default function InicioTab() {
 
           {currentSection === "Avisos" && (
             <>
-              <NoticeCard className="bg-white p-5 mb-4 rounded-2xl shadow-md border border-orange-400">
-                <Text className="text-lg font-semibold text-gray-800">
-                  Inscripciones para Talleres Extracurriculares
-                </Text>
-                <Text className="text-gray-600 mt-1">
-                  Las inscripciones para los talleres extracurriculares del
-                  semestre estarán abiertas del 15 al 25 de noviembre...
-                </Text>
-                <Text className="text-sm text-gray-400 mt-2">
-                  15 de noviembre de 2024
-                </Text>
-              </NoticeCard>
-
-              <NoticeCard className="bg-white p-5 mb-4 rounded-2xl shadow-md border border-orange-400">
-                <Text className="text-lg font-semibold text-gray-800">
-                  Cambio en el Horario de Clases
-                </Text>
-                <Text className="text-gray-600 mt-1">
-                  Debido a una actividad especial, el horario de clases del día
-                  5 de diciembre será modificado...
-                </Text>
-                <Text className="text-sm text-gray-400 mt-2">
-                  5 de diciembre de 2024
-                </Text>
-              </NoticeCard>
+              {avisos.filter((item) => item.tipo === 1).map(({ id, titulo, descripcion, fechaPublicacion }) => (
+                <NoticeCard className="bg-white p-5 mb-4 rounded-2xl shadow-md border border-orange-400" key={id}>
+                  <Text className="text-lg font-semibold text-gray-800">
+                    {titulo}
+                  </Text>
+                  <Text className="text-gray-600 mt-1">
+                    {descripcion}
+                  </Text>
+                  <Text className="text-sm text-gray-400 mt-2">
+                    {Utils.formatFirebaseDate(fechaPublicacion)}
+                  </Text>
+                </NoticeCard>
+              ))}
             </>
           )}
 
           {currentSection === "Eventos" && (
             <>
-              <NoticeCard className="bg-white p-5 mb-4 rounded-2xl shadow-md border border-orange-400">
-                <Text className="text-lg font-semibold text-gray-800">
-                  Reunión de Padres de Familia
-                </Text>
-                <Text className="text-gray-600 mt-1">
-                  Reunión informativa para discutir el rendimiento académico de
-                  los estudiantes..
-                </Text>
-                <Text className="text-sm text-gray-400 mt-2">
-                  10 de noviembre de 2024
-                </Text>
-              </NoticeCard>
-
-              <NoticeCard className="bg-white p-5 mb-4 rounded-2xl shadow-md border border-orange-400">
-                <Text className="text-lg font-semibold text-gray-800">
-                  Feria de Ciencias
-                </Text>
-                <Text className="text-gray-600 mt-1">
-                  Exhibición de proyectos científicos realizados por los
-                  estudiantes de secundaria y preparatoria...
-                </Text>
-                <Text className="text-sm text-gray-400 mt-2">
-                  20 de noviembre de 2024
-                </Text>
-              </NoticeCard>
-
-              <NoticeCard className="bg-white p-5 mb-4 rounded-2xl shadow-md border border-orange-400">
-                <Text className="text-lg font-semibold text-gray-800">
-                  Celebración de Fin de Año Escolar
-                </Text>
-                <Text className="text-gray-600 mt-1">
-                  Ceremonia de clausura con actividades artísticas y entrega de
-                  reconocimientos a estudiantes destacados...
-                </Text>
-                <Text className="text-sm text-gray-400 mt-2">
-                  15 de diciembre de 2024
-                </Text>
-              </NoticeCard>
+              {avisos.filter((item) => item.tipo === 2).map(({ id, titulo, descripcion, fechaPublicacion }) => (
+                <NoticeCard className="bg-white p-5 mb-4 rounded-2xl shadow-md border border-orange-400" key={id}>
+                  <Text className="text-lg font-semibold text-gray-800">
+                    {titulo}
+                  </Text>
+                  <Text className="text-gray-600 mt-1">
+                    {descripcion}
+                  </Text>
+                  <Text className="text-sm text-gray-400 mt-2">
+                    {Utils.formatFirebaseDate(fechaPublicacion)}
+                  </Text>
+                </NoticeCard>
+              ))}
             </>
           )}
         </View>

@@ -2,11 +2,16 @@ import Screen from "@/components/Screen";
 import { router } from "expo-router";
 import { Text, View, TouchableOpacity } from "react-native";
 import { styled } from "nativewind";
-import { useState } from "react";
-import { signOut } from "@/lib/appwrite";
+import { Image } from "react-native";
+import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import CustomButton from "@/components/CustomButton";
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { signOut } from "@/lib/appwrite";
+import { useState, useEffect } from "react";
+import { createIconSet } from "react-native-vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import Session from "@/services/Session";
+import NotificationService from "@/services/Notifications";
 
 const Container = styled(View);
 const ProfileCard = styled(View);
@@ -17,15 +22,34 @@ const BottomNavigation = styled(View);
 
 export default function PerfilTab() {
   const [loading, setLoading] = useState(false);
+  const [sessionData, setSessionData] = useState({
+    nombre: '',
+    apellidos: '',
+    matricula: '',
+    tutor: '',
+    fechaNacimiento: '',
+    tipoSangre: '',
+    genero: '',
+    numeroEmergencia: '',
+    alergias: []
+  });
 
-  const handlePress = () => {
+  const handlePress = async () => {
     console.log("Cerrando sesión...");
-    signOut();
     setLoading(true);
-    setTimeout(() => {
-      router.replace("/iniciar-sesion");
-    }, 2000);
+    await signOut();
+    router.replace("/iniciar-sesion");
   };
+
+  const getSessionData = async () => {
+    const data: any = await Session.getSessionData();
+    setSessionData(data);
+  }
+
+  useEffect(() => {
+    NotificationService.setNotificationListener();
+    getSessionData();
+  }, []);
 
   return (
     <SafeAreaView>
@@ -37,17 +61,17 @@ export default function PerfilTab() {
         </View>
 
         {/* User Info */}
-        <ProfileText className="text-3xl font-bold text-gray-800 mb-2">
-          Erick Yahir Cauich Chan
+        <ProfileText className="text-2xl font-bold text-gray-700 mb-2">
+          {sessionData.nombre} {sessionData.apellidos}
         </ProfileText>
-        <ProfileText className="text-lg text-gray-500 mb-1">
-          Matrícula: 21393129
+        <ProfileText className="text-lg font-bold text-gray-500 mb-2">
+          {sessionData.matricula}
         </ProfileText>
 
         {/* Tutor Info */}
         <ProfileText className="text-lg text-gray-500 mb-2">
           <Text className="font-semibold text-xl text-gray-800">Tutor: </Text>
-          Lic. Erendira De Jesus Aleman Zeferino
+          {sessionData.tutor}
         </ProfileText>
       </ProfileCard>
 
@@ -62,27 +86,37 @@ export default function PerfilTab() {
           <InfoText className="text-base font-semibold text-gray-700 mb-1">
             Fecha de nacimiento:
           </InfoText>
-          <InfoText className="text-base text-gray-600 mb-4">15 de marzo de 1999</InfoText>
+          <InfoText className="text-gray-600 mb-4">
+            {sessionData.fechaNacimiento}
+          </InfoText>
 
           <InfoText className="text-base font-semibold text-gray-700 mb-1">
             Tipo de sangre:
           </InfoText>
-          <InfoText className="text-base text-gray-600 mb-4">O+</InfoText>
+          <InfoText className="text-gray-600 mb-4">
+            {sessionData.tipoSangre}
+          </InfoText>
 
           <InfoText className="text-base font-semibold text-gray-700 mb-1">
             Género:
           </InfoText>
-          <InfoText className="text-base text-gray-600 mb-4">Femenino</InfoText>
+          <InfoText className="text-gray-600 mb-4">
+            {sessionData.genero}
+          </InfoText>
 
           <InfoText className="text-base font-semibold text-gray-700 mb-1">
             Número de emergencia:
           </InfoText>
-          <InfoText className="text-base text-gray-600 mb-4">+52 998 123 4567</InfoText>
+          <InfoText className="text-gray-600 mb-4">
+            {sessionData.numeroEmergencia}
+          </InfoText>
 
           <InfoText className="text-base font-semibold text-gray-700 mb-1">
             Alergias:
           </InfoText>
-          <InfoText className="text-base text-gray-600">Polvo, lácteos</InfoText>
+          <InfoText className="text-gray-600">
+            {(sessionData.alergias || []).join(", ")}
+          </InfoText>
         </InfoCard>
       </View>
 

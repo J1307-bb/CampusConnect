@@ -14,14 +14,18 @@
     },
     "ios": {
       "supportsTablet": true,
-      "package": "com.idygs101.campusconnect"
+      "package": "com.idygs101.campusconnect",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "bundleIndentifier": "com.idygs101.campusconnect",
+      "bundleIdentifier": "com.idygs101.campusconnect"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.idygs101.campusconnect"
+      "package": "com.idygs101.campusconnect",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -30,11 +34,30 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification_icon.png",
+          "color": "#ffffff",
+          "defaultChannel": "default",
+          "sounds": [
+            "./assets/sounds/notification_sound.wav"
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
       "tsconfigPaths": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "20d1daea-4ea7-41ac-8eb2-a848abd8f4d7"
+      }
     }
   }
 }

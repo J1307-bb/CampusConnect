@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, ScrollView, ProgressBarAndroid, Alert, SafeAreaView, Modal } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import tw from 'tailwind-react-native-classnames';
 
+import Session from '@/services/Session';
+import Http from '@/services/Http';
+import Cache from '@/services/Cache';
+import Utils from '@/services/Utils';
+
 interface File {
   id: number;
   name: string;
+  nombre: string;
   type: string;
   size: string;
   status: 'ready' | 'uploading' | 'done';
@@ -15,10 +21,61 @@ interface File {
 
 const FileUploader = () => {
   const [files, setFiles] = useState<File[]>([]);
-  const [selectedClass, setSelectedClass] = useState('IDYGS101');
-  const [isModalVisible, setModalVisible] = useState(false);
+  const [selectedClass, setSelectedClass] = useState('todos');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [grupos, setGrupos] = useState([{ nombre: '', id: '' }]);
 
-  const classes = ["Todos", "IDYS101", "IDYGS", "IDYGS102"];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [gruposData] = await Promise.all([
+          await Cache.getData("gruposAsignados"),
+        ]);
+
+        setGrupos([{ nombre: 'Todos', id: 'todos' }, ...gruposData]);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const uploadFile = async (file: any) => {
+    const name = `${Date.now()}${(file.name || '')}`;
+    const [, extension] = file.mimeType.split('/');
+    const sessionData = await Session.getSessionData();
+
+    file.name = name;
+    file.uri = await Utils.base64FromUri(file.uri);
+
+    const fileData = {
+      id: Date.now(),
+      name: 'file',
+      nombre: name,
+      files: [file],
+      type: extension.toUpperCase() || 'UNKNOWN',
+      size: file.size || 0,
+      uploader: `${sessionData.nombre} ${sessionData.apellidos}`,
+      bucket: 'recursosacademicos'
+    };
+
+    const response = await Http.post('/archivos', fileData, { sendFile: true });
+
+    return fileData
+  };
+
+  const getFileSize = (size: number) => {
+    if (isNaN(size)) return '0 B';
+
+    if (size > 1024 * 1024) {
+      return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+    } else if (size > 1024) {
+      return `${(size / 1024).toFixed(2)} KB`;
+    } else {
+      return `${size} B`;
+    }
+  };
 
   const selectFile = async () => {
     try {
@@ -27,33 +84,17 @@ const FileUploader = () => {
         copyToCacheDirectory: true,
       });
 
-      console.log("Resultado de selección:", result);
-
-      if (result && result.assets && result.assets.length > 0) {
+      if (result?.assets?.length) {
         const file = result.assets[0];
-        const newFile: File = {
-          id: Date.now(),
-          name: file.name || 'Sin nombre',
-          type: file.type?.split('/')[1]?.toUpperCase() || 'UNKNOWN',
-          size: file.size ? (file.size / 1024 / 1024).toFixed(1) : '0',
-          status: 'ready',
-          uploader: 'Usuario Desconocido',
-        };
+        const newFile: any = await uploadFile(file);
 
         setFiles((prevFiles) => [...prevFiles, newFile]);
-      } else if (result && result.output && result.output.length > 0) {
+      } else if (result?.output?.length) {
         const file = result.output[0];
-        const newFile: File = {
-          id: Date.now(),
-          name: file.name || 'Sin nombre',
-          type: file.type?.split('/')[1]?.toUpperCase() || 'UNKNOWN',
-          size: file.size ? (file.size / 1024 / 1024).toFixed(1) : '0',
-          status: 'ready',
-          uploader: 'Usuario Desconocido',
-        };
+        const newFile: any = await uploadFile(file);
 
         setFiles((prevFiles) => [...prevFiles, newFile]);
-      } else if (result.type === 'cancel') {
+      } else if (result.canceled) {
         Alert.alert("No seleccionaste ningún archivo");
       }
     } catch (error) {
@@ -94,9 +135,9 @@ const FileUploader = () => {
         <View style={tw`flex-row items-center`}>
           <Icon name={iconName} size={32} color={iconColor} style={tw`mr-4`} />
           <View>
-            <Text style={tw`font-semibold text-sm`}>{item.name}</Text>
+            <Text style={tw`font-semibold text-sm`}>{item.nombre}</Text>
             <Text style={tw`text-gray-500 text-xs`}>{item.uploader}</Text>
-            <Text style={tw`text-gray-500 text-xs`}>{item.size} MB</Text>
+            <Text style={tw`text-gray-500 text-xs`}>{getFileSize(Number(item.size))}</Text>
           </View>
         </View>
       </View>
@@ -109,7 +150,7 @@ const FileUploader = () => {
         <View style={tw`flex-row items-center mb-6`}>
           <Text style={tw`text-lg font-semibold mr-3`}>Seleccionar clase:</Text>
           <TouchableOpacity onPress={() => setModalVisible(true)} style={tw`flex-row items-center bg-gray-200 rounded-full px-3 py-1`}>
-            <Text style={tw`text-gray-700 mr-2`}>{selectedClass}</Text>
+            <Text style={tw`text-gray-700 mr-2`}>{ grupos.find(item => item.id === selectedClass)?.nombre }</Text>
             <Icon name="chevron-down" size={16} color="gray" />
           </TouchableOpacity>
         </View>
@@ -129,20 +170,20 @@ const FileUploader = () => {
         />
       </View>
 
-      <Modal visible={isModalVisible} transparent={true} animationType="slide">
+      <Modal visible={modalVisible} transparent={true} animationType="slide">
         <View style={tw`flex-1 justify-center bg-black bg-opacity-50`}>
           <View style={tw`bg-white mx-6 p-4 rounded-lg`}>
             <Text style={tw`text-lg font-semibold mb-4`}>Selecciona una clase</Text>
-            {classes.map((cls, index) => (
+            {grupos.map(({ id, nombre }) => (
               <TouchableOpacity
-                key={index}
+                key={id}
                 onPress={() => {
-                  setSelectedClass(cls);
+                  setSelectedClass(id);
                   setModalVisible(false);
                 }}
                 style={tw`py-2 border-b border-gray-200`}
               >
-                <Text style={tw`text-gray-700`}>{cls}</Text>
+                <Text style={tw`text-gray-700`}>{nombre}</Text>
               </TouchableOpacity>
             ))}
             <TouchableOpacity onPress={() => setModalVisible(false)} className={`mt-4 p-2 bg-orange-400 rounded-lg`}>

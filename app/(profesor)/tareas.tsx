@@ -6,32 +6,76 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput } from "react-native-paper";
 
+import Cache from "@/services/Cache";
+import Catalogs from "@/services/Catalogs";
+import NotificationService from "@/services/Notifications";
+import Utils from "@/services/Utils";
+
 const AgregarTarea = () => {
-  const [selectedGroup, setSelectedGroup] = useState("Todos");
-  const [tasks, setTasks] = useState([
+  const [selectedGroup, setSelectedGroup] = useState("todos");
+  const [titulo, setTitulo] = useState("");
+  const [descripcion, setDescripcion] = useState("");
+  const [fechaVencimiento, setFechaVencimiento] = useState("");
+  const [tareas, setTareas] = useState([
     {
-      group: "IDYGS101",
-      title: "Tarea de matemáticas",
-      dueDate: "Mañana",
-      status: "Pendiente",
-    },
-    {
-      group: "IDYGS102",
-      title: "Proyecto de ciencias",
-      dueDate: "En 2 días",
-      status: "En Progreso",
-    },
-    {
-      group: "IDYGS103",
-      title: "Tarea de historia",
-      dueDate: "Hoy",
-      status: "Completada",
+      id: '',
+      idGrupo: "",
+      grupo: {
+        nombre: "",
+      },
+      titulo: "",
+      fechaVencimiento: "",
     },
   ]);
+  const [grupos, setGrupos] = useState([
+    {
+      nombre: '',
+      id: '',
+    }
+  ]);
+  const [sessionData, setSessionData] = useState({
+    id: '',
+  });
+
+  useEffect(() => {
+    NotificationService.setNotificationListener();
+
+    const fetchData = async () => {
+      try {
+        const [gruposData, tareasData, sessionData] = await Promise.all([
+          await Cache.getData("gruposAsignados"),
+          await Catalogs.getTareasCreadas(),
+          await Cache.getData("sessionData"),
+        ]);
+
+        setGrupos([{ nombre: 'Todos', id: 'todos' }, ...gruposData]);
+        setTareas(tareasData);
+        setSessionData(sessionData);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const sendData = async () => {
+    //TODO: Agregar idMateria
+    const opts = {
+      titulo,
+      descripcion,
+      fechaVencimiento,
+      to: selectedGroup,
+      idProfesor: sessionData.id,
+      idMateria: '',
+    };
+
+    await Catalogs.postTareas(opts);
+  };
 
   return (
     <KeyboardAvoidingView
@@ -45,25 +89,24 @@ const AgregarTarea = () => {
           <View className="mb-6">
             <Text className="font-semibold mb-2">Seleccionar grupo:</Text>
             <ScrollView horizontal className="flex-row">
-              {["Todos", "IDYGS101", "IDYGS102", "IDYGS103"].map(
-                (group, index) => (
+              {grupos.map(({ id, nombre }) => (
                   <TouchableOpacity
-                    key={index}
-                    onPress={() => setSelectedGroup(group)}
+                    key={id}
+                    onPress={() => setSelectedGroup(id)}
                     className={`border ${
-                      selectedGroup === group
+                      selectedGroup === id
                         ? "border-orange-500"
                         : "border-gray-300"
                     } px-3 py-1 rounded-full mr-2`}
                   >
                     <Text
                       className={
-                        selectedGroup === group
+                        selectedGroup === id
                           ? "text-orange-500"
                           : "text-gray-600"
                       }
                     >
-                      {group}
+                      {nombre}
                     </Text>
                   </TouchableOpacity>
                 )
@@ -74,27 +117,24 @@ const AgregarTarea = () => {
           {/* Lista de Tareas */}
           <View className="mb-6">
             <Text className="text-lg font-semibold mb-4">Tareas:</Text>
-            {tasks
-              .filter(
-                (task) =>
-                  selectedGroup === "Todos" || task.group === selectedGroup
-              )
-              .map((task, index) => (
+            {tareas
+              .filter((tarea) => selectedGroup === "todos" || tarea.idGrupo === selectedGroup)
+              .map(({ id, titulo, fechaVencimiento, grupo = {}}) => (
                 <View
-                  key={index}
+                  key={id}
                   className="flex-row items-center bg-white p-4 rounded-lg mb-4"
                 >
                   <View className="flex-1">
                     <Text className="text-gray-800 font-semibold">
-                      {task.title}
+                      {titulo}
                     </Text>
                     <Text className="text-gray-500 text-xs">
-                      Grupo: {task.group}
+                      Grupo: {grupo.nombre}
                     </Text>
                     <Text className="text-gray-400 text-xs">
-                      Fecha de entrega: {task.dueDate}
+                      Fecha de entrega: {Utils.getFormatRemainingTime(fechaVencimiento)}
                     </Text>
-                    <Text
+                    {/* <Text
                       className={`text-sm ${
                         task.status === "Pendiente"
                           ? "text-red-500"
@@ -104,7 +144,7 @@ const AgregarTarea = () => {
                       }`}
                     >
                       {task.status}
-                    </Text>
+                    </Text> */}
                   </View>
                 </View>
               ))}
@@ -120,25 +160,25 @@ const AgregarTarea = () => {
             <View className="mb-4">
               <Text className="font-semibold mb-2">Seleccionar grupo:</Text>
               <ScrollView horizontal className="flex-row">
-                {["IDYGS101", "IDYGS102", "IDYGS103", "Todos"].map(
-                  (group, index) => (
+                {grupos.map(
+                  ({ id, nombre }) => (
                     <TouchableOpacity
-                      key={index}
-                      onPress={() => setSelectedGroup(group)}
+                      key={id}
+                      onPress={() => setSelectedGroup(id)}
                       className={`border ${
-                        selectedGroup === group
+                        selectedGroup === id
                           ? "border-orange-500"
                           : "border-gray-300"
                       } px-3 py-1 rounded-full mr-2`}
                     >
                       <Text
                         className={
-                          selectedGroup === group
+                          selectedGroup === id
                             ? "text-orange-500"
                             : "text-gray-600"
                         }
                       >
-                        {group}
+                        {nombre}
                       </Text>
                     </TouchableOpacity>
                   )
@@ -160,7 +200,7 @@ const AgregarTarea = () => {
               activeUnderlineColor="orange"
             />
 
-            <TouchableOpacity className="bg-orange-500 py-3 rounded-lg">
+            <TouchableOpacity className="bg-orange-500 py-3 rounded-lg" onPress={sendData}>
               <Text className="text-white text-center font-semibold">
                 Crear Tarea
               </Text>

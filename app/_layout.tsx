@@ -13,10 +13,19 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { View } from "react-native";
 import GlobalProvider from "@/context/GlobalProvider";
 
+import * as Sentry from "@sentry/react-native";
+
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+Sentry.init({
+  dsn: "https://446ddb0a6e6c2cb534f45d5e129e17fb@o4508326779092992.ingest.us.sentry.io/4508326780731392",
+  tracesSampleRate: 1.0,
+  profilesSampleRate: 1.0,
+  parentSpanIsAlwaysRootSpan: false,
+});
+
+function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
@@ -35,21 +44,26 @@ export default function RootLayout() {
   return (
     /* <ThemeProvider value={colorScheme === 'dark' ? DarkThreeme : DefaultTheme}> */
     /* <GlobalProvider> */
-    <Stack>
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(profesor)" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="mapa"
-        options={{
-          headerShown: true,
-          headerBackTitle: "Atrás",
-          title: "Mapa del Campus",
-        }}
-      />
-    </Stack>
+    // es necesario envolver la aplicación en un componente para Sentry
+    <>
+          <Stack>
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="(profesor)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="mapa"
+              options={{
+                headerShown: true,
+                headerBackTitle: "Atrás",
+                title: "Mapa del Campus",
+              }}
+            />
+          </Stack>
+    </>
     /* </GlobalProvider> */
     /* </ThemeProvider> */
   );
 }
+
+export default Sentry.wrap(RootLayout)

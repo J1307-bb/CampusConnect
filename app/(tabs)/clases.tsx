@@ -1,7 +1,11 @@
 import { AnimatedMateriaCard } from "@/components/cards/MateriaCard";
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import Screen from "@/components/Screen";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { IMateria } from "@/interfaces/IInterfaces";
+import Cache from "@/services/Cache";
+import NotificationService from "@/services/Notifications";
+
 import {
   FlatList,
   Text,
@@ -9,14 +13,26 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import materias from "@/data/materias.json";
+
 
 export default function ClasesTab() {
   const [searchText, setSearchText] = useState("");
+  const [materias, setMaterias] = useState<IMateria[]>([]);
+
+  const getData = async () => {
+    const materiasData: any = await Cache.getData("materias");
+
+    setMaterias(materiasData);
+  }
+
+  useEffect(() => {
+    NotificationService.setNotificationListener();
+    getData();
+  }, []);
 
   // Filtro de clases por búsqueda
   const filteredClasses = materias.filter((cls) =>
-    cls.title.toLowerCase().includes(searchText.toLowerCase())
+    cls.materia?.toLowerCase().includes(searchText.toLowerCase())
   );
 
   return (

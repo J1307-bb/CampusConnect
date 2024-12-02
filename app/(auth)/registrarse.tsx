@@ -12,26 +12,31 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import tw from 'tailwind-react-native-classnames';
-
+import Http from '@/services/Http';
+import Utils from '@/services/Utils';
 import { createUser } from "@/lib/appwrite";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import { router } from "expo-router";
 
 function Registro() {
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [allergies, setAllergies] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [matricula, setMatricula] = useState("");
   const [genero, setGenero] = useState("");
   const [tipoSangre, setTipoSangre] = useState("");
   const [turno, setTurno] = useState("");
+  const [grupo, setGrupo] = useState("");
   const [isChecked, setIsChecked] = useState(false);
   const [date, setDate] = useState(new Date());
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
   const [isGenderModalVisible, setIsGenderModalVisible] = useState(false);
   const [isBloodTypeModalVisible, setIsBloodTypeModalVisible] = useState(false);
   const [isTurnoModalVisible, setIsTurnoModalVisible] = useState(false);
+  const [isGrupoModalVisible, setIsGrupoModalVisible] = useState(false);
 
     /* const { setUser, setIsLogged } = useGlobalContext(); */
   
@@ -63,8 +68,31 @@ function Registro() {
     }; */
 
   const handleRegister = async () => {
-    console.log("Registro completado");
-    
+    const formData = {
+      nombre: firstName,
+      apellidos: lastName,
+      correo: email,
+      contrasenia: password,
+      telefono: phone,
+      fechaNacimiento: Utils.formatDate(String(date)),
+      alergias: (allergies || "").split(","),
+      genero,
+      tipoSangre,
+      idGrupo: grupo,
+      turno,
+      matricula,
+    }
+
+    try {
+      const { data } = await Http.post("/register", formData);
+
+      if (data.id) {
+        Alert.alert("Éxito", "Usuario registrado correctamente");
+        router.replace("/(auth)/iniciar-sesion");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleOpenDatePicker = () => {
@@ -92,6 +120,10 @@ function Registro() {
     setIsTurnoModalVisible(!isTurnoModalVisible);
   };
 
+  const toggleGrupoModal = () => {
+    setIsGrupoModalVisible(!isGrupoModalVisible);
+  };
+
   const selectGender = (gender: string) => {
     setGenero(gender);
     toggleGenderModal();
@@ -107,9 +139,19 @@ function Registro() {
     toggleTurnoModal();
   };
 
+  const selectGrupo = (token: string) => {
+    setGrupo(token);
+    toggleGrupoModal();
+  };
+
   const genderOptions = ["Mujer", "Hombre", "Prefiero no especificarlo"];
   const bloodTypeOptions = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
   const turnoOptions = ["Matutino", "Vespertino"];
+  const gruposOptions = [
+    { label: 'IDYS101', value: '39nw7QwnzCBvFgBEVGyt' },
+    { label: 'IDYS102', value: 'deQOC9D0izHSYuGXVznE  ' },
+    { label: 'IDYS103', value: '4ZiVPxHBHkGSaFJoHGev' },
+  ];
 
   return (
     <SafeAreaView>
@@ -125,13 +167,23 @@ function Registro() {
           <View className="border-b border-gray-300 my-4" />
 
           <Text className="text-lg font-semibold text-left mb-2">
-            Nombre completo
+            Nombre(s)
           </Text>
           <TextInput
             className="border bg-white border-gray-300 rounded-lg w-full px-4 py-3 mb-4"
-            placeholder="Nombre completo"
-            value={fullName}
-            onChangeText={setFullName}
+            placeholder="Nombre"
+            value={firstName}
+            onChangeText={setFirstName}
+          />
+
+          <Text className="text-lg font-semibold text-left mb-2">
+            Apellido(s)
+          </Text>
+          <TextInput
+            className="border bg-white border-gray-300 rounded-lg w-full px-4 py-3 mb-4"
+            placeholder="Apellido"
+            value={lastName}
+            onChangeText={setLastName}
           />
 
           <Text className="text-lg font-semibold text-left mb-2">
@@ -212,6 +264,29 @@ function Registro() {
             </TouchableOpacity>
           </Modal>
 
+          <Text className="text-lg font-semibold text-left mb-2">Grupo</Text>
+          <TouchableOpacity
+            className="border bg-white border-gray-300 rounded-lg w-full px-4 py-3 mb-4 flex-row justify-between"
+            onPress={toggleGrupoModal}
+          >
+            <Text className="text-gray-700">
+              {grupo || "Selecciona tu grupo"}
+            </Text>
+            <Text className="text-gray-700">⌵</Text>
+          </TouchableOpacity>
+          
+          <Modal visible={isGrupoModalVisible} transparent={true} animationType="slide">
+            <TouchableOpacity style={tw`flex-1 justify-center items-center bg-black bg-opacity-50`} onPress={toggleGrupoModal}>
+              <View className="bg-white rounded-lg w-5/6 p-4">
+                <FlatList data={gruposOptions} keyExtractor={(item) => item.label} renderItem={({ item }) => (
+                  <TouchableOpacity className="p-4 border-b border-gray-200" onPress={() => selectGrupo(item.value)}>
+                    <Text className="text-lg text-gray-700">{item.label}</Text>
+                  </TouchableOpacity>
+                )} />
+              </View>
+            </TouchableOpacity>
+          </Modal>
+
           <Text className="text-lg font-semibold text-left mb-2">
             Fecha de nacimiento
           </Text>
@@ -230,20 +305,12 @@ function Registro() {
             onCancel={handleCloseDatePicker}
           />
 
-          <Text className="text-lg font-semibold text-left mb-2">
-            Matrícula
-          </Text>
-          <TextInput
-            className="border bg-white border-gray-300 rounded-lg w-full px-4 py-3 mb-4"
-            placeholder="Matrícula"
-            value={matricula}
-            onChangeText={setMatricula}
-          />
-
           <Text className="text-lg font-semibold text-left mb-2">Alergias</Text>
           <TextInput
             className="border bg-white border-gray-300 rounded-lg w-full px-4 py-3 mb-4"
-            placeholder="Medicamentos/Alimentos"
+            placeholder="Medicamentos/Alimentos separados por comas(,)"
+            value={allergies}
+            onChangeText={setAllergies}
           />
 
           <Text className="text-lg font-semibold text-left mb-2">Género</Text>
@@ -251,7 +318,8 @@ function Registro() {
             className="border bg-white border-gray-300 rounded-lg w-full px-4 py-3 mb-4 flex-row justify-between"
             onPress={toggleGenderModal}
           >
-            <Text className="text-gray-700">
+            <Text className="text-gray-700"
+            >
               {genero || "Selecciona tu género"}
             </Text>
             <Text className="text-gray-700">⌵</Text>
